@@ -1,6 +1,8 @@
 package game
 
 import (
+	"fmt"
+
 	"github.com/awoo-detat/werewolf/player"
 	"github.com/awoo-detat/werewolf/role/roleset"
 
@@ -12,7 +14,7 @@ type Game struct {
 	Leader  *player.Player
 	Players map[uuid.UUID]*player.Player
 	Roleset *roleset.Roleset
-	State   GameState
+	state   GameState
 	Phase   int
 }
 
@@ -35,8 +37,27 @@ func NewGame(p *player.Player) *Game {
 	return g
 }
 
+func (g *Game) State() GameState {
+	return g.state
+}
+
 func (g *Game) AddPlayer(p *player.Player) {
 	g.Players[p.ID] = p
 }
 
-// start the game etc
+func (g *Game) ChooseRoleset(slug string) error {
+	if g.state > Setup {
+		return fmt.Errorf("game is in state %v, not Setup", g.state)
+	}
+	rs, ok := roleset.List()[slug]
+
+	if !ok {
+		return fmt.Errorf("roleset %s not found", slug)
+	}
+	g.Roleset = rs
+	return nil
+}
+
+func (g *Game) StartGame() error {
+	return nil
+}
