@@ -21,9 +21,9 @@ type Game struct {
 type GameState int
 
 const (
-	Setup    GameState = iota
-	Running            = iota
-	Finished           = iota
+	Setup GameState = iota
+	Running
+	Finished
 )
 
 func NewGame(p *player.Player) *Game {
@@ -47,17 +47,28 @@ func (g *Game) AddPlayer(p *player.Player) {
 
 func (g *Game) ChooseRoleset(slug string) error {
 	if g.state > Setup {
-		return fmt.Errorf("game is in state %v, not Setup", g.state)
+		return &StateError{NeedState: Setup, InState: g.state}
 	}
 	rs, ok := roleset.List()[slug]
-
 	if !ok {
 		return fmt.Errorf("roleset %s not found", slug)
 	}
+
 	g.Roleset = rs
 	return nil
 }
 
 func (g *Game) StartGame() error {
+	if g.state > Setup {
+		return &StateError{NeedState: Setup, InState: g.state}
+	}
+	if g.Roleset == nil {
+		return fmt.Errorf("game: no roleset defined") // TODO
+	}
+	if len(g.Players) != len(g.Roleset.Roles) {
+		return &PlayerCountError{Roleset: g.Roleset, PlayerCount: len(g.Players)}
+	}
+
+	g.state = Running
 	return nil
 }
