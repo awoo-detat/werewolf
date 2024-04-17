@@ -23,3 +23,11 @@ type PlayerCountError struct {
 func (e *PlayerCountError) Error() string {
 	return fmt.Sprintf("game: roleset %s requires %d participants, have %d", e.Roleset.Name, len(e.Roleset.Roles), e.PlayerCount)
 }
+
+type PhaseError struct {
+	GamePhase int
+}
+
+func (e *PhaseError) Error() string {
+	return fmt.Sprintf("game: in invalid phase %v", e.GamePhase)
+}
