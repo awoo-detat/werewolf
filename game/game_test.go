@@ -4,22 +4,24 @@ import (
 	"testing"
 
 	"github.com/awoo-detat/werewolf/player"
+	"github.com/awoo-detat/werewolf/role"
 	"github.com/awoo-detat/werewolf/role/roleset"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestInitialization(t *testing.T) {
+	assert := assert.New(t)
 	l := player.NewPlayer()
 
 	g := NewGame(l)
 
-	assert.NotEmpty(t, g.ID)
-	assert.Equal(t, l, g.Leader)
-	assert.Len(t, g.Players, 1)
-	assert.Nil(t, g.Roleset)
-	assert.Equal(t, Setup, g.State())
-	assert.Equal(t, 0, g.Phase)
+	assert.NotEmpty(g.ID)
+	assert.Equal(l, g.Leader)
+	assert.Len(g.Players, 1)
+	assert.Nil(g.Roleset)
+	assert.Equal(Setup, g.State())
+	assert.Equal(0, g.Phase)
 }
 
 func TestAddingPlayers(t *testing.T) {
@@ -33,82 +35,87 @@ func TestAddingPlayers(t *testing.T) {
 }
 
 func TestSetRoleset(t *testing.T) {
+	assert := assert.New(t)
 	l := player.NewPlayer()
 	g := NewGame(l)
 	rs := roleset.VanillaFiver()
 
 	err := g.ChooseRoleset("Vanilla Fiver")
 
-	assert.Equal(t, rs, g.Roleset)
-	assert.Nil(t, err)
+	assert.Equal(rs, g.Roleset)
+	assert.Nil(err)
 }
 
 func TestRolesetMustExist(t *testing.T) {
+	assert := assert.New(t)
 	l := player.NewPlayer()
 	g := NewGame(l)
 
 	err := g.ChooseRoleset("dkjjfkfwegfwegy")
 
-	assert.Nil(t, g.Roleset)
-	assert.Error(t, err)
+	assert.Nil(g.Roleset)
+	assert.Error(err)
 }
 
 func TestCanChangeRolesetWhenInSetup(t *testing.T) {
+	assert := assert.New(t)
 	l := player.NewPlayer()
 	g := NewGame(l)
-	assert.Equal(t, Setup, g.State())
+	assert.Equal(Setup, g.State())
 	err := g.ChooseRoleset("Vanilla Fiver")
-	assert.Nil(t, err)
+	assert.Nil(err)
 
 	err = g.ChooseRoleset("Basic Niner")
-	assert.Nil(t, err)
+	assert.Nil(err)
 	err = g.ChooseRoleset("Fast Fiver")
-	assert.Nil(t, err)
+	assert.Nil(err)
 
 }
 
 func TestGameCannotHaveStartedWhenChoosingRoleset(t *testing.T) {
+	assert := assert.New(t)
 	p1 := player.NewPlayer()
 	p2 := player.NewPlayer()
 	p3 := player.NewPlayer()
 	p4 := player.NewPlayer()
 	p5 := player.NewPlayer()
 	g := NewGame(p1)
-	assert.Equal(t, Setup, g.State())
+	assert.Equal(Setup, g.State())
 	g.AddPlayer(p2)
 	g.AddPlayer(p3)
 	g.AddPlayer(p4)
 	g.AddPlayer(p5)
 	err := g.ChooseRoleset("Vanilla Fiver")
-	assert.Nil(t, err)
+	assert.Nil(err)
 	err = g.StartGame()
-	assert.Nil(t, err)
+	assert.Nil(err)
 
 	err = g.ChooseRoleset("Fast Fiver")
 
-	assert.Error(t, err)
+	assert.Error(err)
 }
 
 func TestCannotStartWhenNotInSetup(t *testing.T) {
+	assert := assert.New(t)
 	p1 := player.NewPlayer()
 	p2 := player.NewPlayer()
 	p3 := player.NewPlayer()
 	p4 := player.NewPlayer()
 	p5 := player.NewPlayer()
 	g := NewGame(p1)
-	assert.Equal(t, Setup, g.State())
+	assert.Equal(Setup, g.State())
 	g.AddPlayer(p2)
 	g.AddPlayer(p3)
 	g.AddPlayer(p4)
 	g.AddPlayer(p5)
 	err := g.ChooseRoleset("Vanilla Fiver")
-	assert.Nil(t, err)
+	assert.Nil(err)
 	err = g.StartGame()
-	assert.Nil(t, err)
+	assert.Nil(err)
 
 	err = g.StartGame()
 
-	assert.Error(t, err)
+	assert.Error(err)
 }
 
 func TestCannotStartGameWithoutRoleset(t *testing.T) {
@@ -121,18 +128,19 @@ func TestCannotStartGameWithoutRoleset(t *testing.T) {
 }
 
 func TestCannotStartGameWithMismatchedPlayerCountAndRoleset(t *testing.T) {
+	assert := assert.New(t)
 	l := player.NewPlayer()
 	g := NewGame(l)
 	err := g.ChooseRoleset("Vanilla Fiver")
-	assert.Nil(t, err)
+	assert.Nil(err)
 
 	err = g.StartGame()
 
-	assert.Error(t, err) // TODO match on the error?
+	assert.Error(err) // TODO match on the error?
 }
 
-// really more of an integration test, maybe!
-func TestFiver(t *testing.T) {
+func TestRolesAreAssignedAtGameStart(t *testing.T) {
+	assert := assert.New(t)
 	p1 := player.NewPlayer()
 	p2 := player.NewPlayer()
 	p3 := player.NewPlayer()
@@ -140,7 +148,7 @@ func TestFiver(t *testing.T) {
 	p5 := player.NewPlayer()
 
 	g := NewGame(p1)
-	assert.Equal(t, Setup, g.State())
+	assert.Equal(Setup, g.State())
 
 	g.AddPlayer(p2)
 	g.AddPlayer(p3)
@@ -148,9 +156,47 @@ func TestFiver(t *testing.T) {
 	g.AddPlayer(p5)
 
 	err := g.ChooseRoleset("Vanilla Fiver")
-	assert.Nil(t, err)
+	assert.Nil(err)
+
+	assert.Nil(p1.Role)
+	assert.Nil(p2.Role)
+	assert.Nil(p3.Role)
+	assert.Nil(p4.Role)
+	assert.Nil(p5.Role)
 
 	err = g.StartGame()
-	assert.Nil(t, err)
-	assert.Equal(t, Running, g.State())
+	assert.Nil(err)
+	assert.Equal(Running, g.State())
+
+	assignedRoles := make([]*role.Role, 0)
+	for _, p := range g.Players {
+		assert.NotNil(p.Role)
+		assignedRoles = append(assignedRoles, p.Role)
+	}
+	assert.ElementsMatch(g.Roleset.Roles, assignedRoles)
+}
+
+// really more of an integration test, maybe!
+func TestFiver(t *testing.T) {
+	assert := assert.New(t)
+	p1 := player.NewPlayer()
+	p2 := player.NewPlayer()
+	p3 := player.NewPlayer()
+	p4 := player.NewPlayer()
+	p5 := player.NewPlayer()
+
+	g := NewGame(p1)
+	assert.Equal(Setup, g.State())
+
+	g.AddPlayer(p2)
+	g.AddPlayer(p3)
+	g.AddPlayer(p4)
+	g.AddPlayer(p5)
+
+	err := g.ChooseRoleset("Vanilla Fiver")
+	assert.Nil(err)
+
+	err = g.StartGame()
+	assert.Nil(err)
+	assert.Equal(Running, g.State())
 }
