@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"math/rand"
 
 	"github.com/awoo-detat/werewolf/player"
 	"github.com/awoo-detat/werewolf/role/roleset"
@@ -58,15 +59,35 @@ func (g *Game) ChooseRoleset(slug string) error {
 	return nil
 }
 
-func (g *Game) StartGame() error {
-	if g.state > Setup {
-		return &StateError{NeedState: Setup, InState: g.state}
-	}
+func (g *Game) assignRoles() error {
 	if g.Roleset == nil {
 		return fmt.Errorf("game: no roleset defined") // TODO
 	}
 	if len(g.Players) != len(g.Roleset.Roles) {
 		return &PlayerCountError{Roleset: g.Roleset, PlayerCount: len(g.Players)}
+	}
+
+	players := make([]*player.Player, 0)
+	for _, p := range g.Players {
+		players = append(players, p)
+	}
+
+	for playerKey, roleKey := range rand.Perm(len(g.Players)) {
+		p := players[playerKey]
+		r := g.Roleset.Roles[roleKey]
+		p.SetRole(r)
+	}
+
+	return nil
+}
+
+func (g *Game) StartGame() error {
+	if g.state > Setup {
+		return &StateError{NeedState: Setup, InState: g.state}
+	}
+
+	if err := g.assignRoles(); err != nil {
+		return err
 	}
 
 	g.state = Running
