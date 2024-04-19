@@ -9,11 +9,13 @@ import (
 )
 
 func TestInitialization(t *testing.T) {
+	assert := assert.New(t)
 	p := NewPlayer()
 
-	assert.NotEmpty(t, p.ID)
-	assert.Empty(t, p.Name)
-	assert.Nil(t, p.Role)
+	assert.NotEmpty(p.ID)
+	assert.Empty(p.Name)
+	assert.Empty(p.Views)
+	assert.Nil(p.Role)
 }
 
 func TestSetName(t *testing.T) {

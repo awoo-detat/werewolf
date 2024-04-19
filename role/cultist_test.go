@@ -37,11 +37,11 @@ func (suite *CultistTestSuite) TestActions() {
 	assert.True(suite.T(), suite.cultist.KnowsMaxes())
 
 	// this a cultist does not do
-	assert.False(suite.T(), suite.cultist.ViewsForMax())
+	assert.False(suite.T(), suite.cultist.CanViewForMax())
 	assert.False(suite.T(), suite.cultist.HasRandomN0Clear())
-	assert.False(suite.T(), suite.cultist.HasNightKill())
-	assert.False(suite.T(), suite.cultist.ViewsForSeer())
-	assert.False(suite.T(), suite.cultist.ViewsForAux())
+	assert.False(suite.T(), suite.cultist.CanNightKill())
+	assert.False(suite.T(), suite.cultist.CanViewForSeer())
+	assert.False(suite.T(), suite.cultist.CanViewForAux())
 
 }
 

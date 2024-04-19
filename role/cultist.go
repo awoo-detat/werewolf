@@ -9,7 +9,7 @@ func Cultist() *Role {
 		Health:         1,
 		Parity:         1,
 		Alive:          true,
-		Attributes:     auxEvil,
+		Attributes:     AuxEvilAttribute,
 		Actions:        knowsMaxes,
 	}
 }

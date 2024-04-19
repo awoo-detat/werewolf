@@ -10,6 +10,6 @@ func Seer() *Role {
 		Parity:         1,
 		Alive:          true,
 		Actions:        viewForMax | randomN0Clear,
-		Attributes:     seer,
+		Attributes:     SeerAttribute,
 	}
 }

@@ -35,12 +35,12 @@ func (suite *AuxSeerTestSuite) TestAttributes() {
 func (suite *AuxSeerTestSuite) TestActions() {
 	// things an aux seer does
 	assert.True(suite.T(), suite.auxseer.HasRandomN0Clear())
-	assert.True(suite.T(), suite.auxseer.ViewsForAux())
+	assert.True(suite.T(), suite.auxseer.CanViewForAux())
 
 	// this an aux seer does not do
-	assert.False(suite.T(), suite.auxseer.ViewsForMax())
-	assert.False(suite.T(), suite.auxseer.HasNightKill())
-	assert.False(suite.T(), suite.auxseer.ViewsForSeer())
+	assert.False(suite.T(), suite.auxseer.CanViewForMax())
+	assert.False(suite.T(), suite.auxseer.CanNightKill())
+	assert.False(suite.T(), suite.auxseer.CanViewForSeer())
 	assert.False(suite.T(), suite.auxseer.KnowsMaxes())
 }
 

@@ -10,6 +10,6 @@ func Sorcerer() *Role {
 		Parity:         1,
 		Alive:          true,
 		Actions:        randomN0Clear | viewForSeer,
-		Attributes:     auxEvil,
+		Attributes:     AuxEvilAttribute,
 	}
 }

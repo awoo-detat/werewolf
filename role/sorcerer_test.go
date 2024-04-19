@@ -34,13 +34,13 @@ func (suite *SorcererTestSuite) TestAttributes() {
 // actions is covered in the game.actions suite.
 func (suite *SorcererTestSuite) TestActions() {
 	// things a sorcerer does
-	assert.True(suite.T(), suite.sorcerer.ViewsForSeer())
+	assert.True(suite.T(), suite.sorcerer.CanViewForSeer())
 	assert.True(suite.T(), suite.sorcerer.HasRandomN0Clear())
 
 	// this a sorcerer does not do
-	assert.False(suite.T(), suite.sorcerer.ViewsForMax())
-	assert.False(suite.T(), suite.sorcerer.HasNightKill())
-	assert.False(suite.T(), suite.sorcerer.ViewsForAux())
+	assert.False(suite.T(), suite.sorcerer.CanViewForMax())
+	assert.False(suite.T(), suite.sorcerer.CanNightKill())
+	assert.False(suite.T(), suite.sorcerer.CanViewForAux())
 	assert.False(suite.T(), suite.sorcerer.KnowsMaxes())
 
 }

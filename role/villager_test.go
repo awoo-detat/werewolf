@@ -32,11 +32,11 @@ func (suite *VillagerTestSuite) TestAttributes() {
 // actions is covered in the game.actions suite.
 func (suite *VillagerTestSuite) TestActions() {
 	// this a villager does not do
-	assert.False(suite.T(), suite.villager.ViewsForMax())
+	assert.False(suite.T(), suite.villager.CanViewForMax())
 	assert.False(suite.T(), suite.villager.HasRandomN0Clear())
-	assert.False(suite.T(), suite.villager.HasNightKill())
-	assert.False(suite.T(), suite.villager.ViewsForSeer())
-	assert.False(suite.T(), suite.villager.ViewsForAux())
+	assert.False(suite.T(), suite.villager.CanNightKill())
+	assert.False(suite.T(), suite.villager.CanViewForSeer())
+	assert.False(suite.T(), suite.villager.CanViewForAux())
 	assert.False(suite.T(), suite.villager.KnowsMaxes())
 }
 
