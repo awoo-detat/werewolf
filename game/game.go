@@ -5,6 +5,7 @@ import (
 	"math/rand"
 
 	"github.com/awoo-detat/werewolf/player"
+	"github.com/awoo-detat/werewolf/role"
 	"github.com/awoo-detat/werewolf/role/roleset"
 
 	"github.com/google/uuid"
@@ -13,10 +14,12 @@ import (
 type Game struct {
 	ID           uuid.UUID
 	Leader       *player.Player
+	VotingMethod VotingMethod
+	AlivePlayers map[uuid.UUID]*player.Player
 	Players      map[uuid.UUID]*player.Player
+	playerSlice  []*player.Player
 	Roleset      *roleset.Roleset
 	state        GameState
-	VotingMethod VotingMethod
 	Phase        int
 }
 
@@ -45,6 +48,8 @@ func NewGame(p *player.Player) *Game {
 		Leader:       p,
 		Players:      make(map[uuid.UUID]*player.Player),
 		VotingMethod: InstaKill,
+		AlivePlayers: make(map[uuid.UUID]*player.Player),
+		playerSlice:  []*player.Player{},
 	}
 	g.AddPlayer(p)
 
@@ -80,13 +85,8 @@ func (g *Game) assignRoles() error {
 		return &PlayerCountError{Roleset: g.Roleset, PlayerCount: len(g.Players)}
 	}
 
-	players := make([]*player.Player, 0)
-	for _, p := range g.Players {
-		players = append(players, p)
-	}
-
 	for playerKey, roleKey := range rand.Perm(len(g.Players)) {
-		p := players[playerKey]
+		p := g.playerSlice[playerKey]
 		r := g.Roleset.Roles[roleKey]
 		p.SetRole(r)
 	}
@@ -94,16 +94,83 @@ func (g *Game) assignRoles() error {
 	return nil
 }
 
+func (g *Game) processN0() {
+	for _, p := range g.Players {
+		if p.Role.CanViewForMax() && p.Role.HasRandomN0Clear() {
+			view := g.randomClear(p, func(r *role.Role) bool { return r.ViewForMaxEvil() })
+			p.Views = append(p.Views, &player.View{
+				Player:    view,
+				Attribute: role.MaxEvilAttribute,
+				Hit:       false,
+				GamePhase: g.Phase,
+			})
+		}
+
+		if p.Role.CanViewForSeer() && p.Role.HasRandomN0Clear() {
+			view := g.randomClear(p, func(r *role.Role) bool { return r.ViewForSeer() })
+			p.Views = append(p.Views, &player.View{
+				Player:    view,
+				Attribute: role.SeerAttribute,
+				Hit:       false,
+				GamePhase: g.Phase,
+			})
+		}
+
+		if p.Role.CanViewForAux() && p.Role.HasRandomN0Clear() {
+			view := g.randomClear(p, func(r *role.Role) bool { return r.ViewForAuxEvil() })
+			p.Views = append(p.Views, &player.View{
+				Player:    view,
+				Attribute: role.AuxEvilAttribute,
+				Hit:       false,
+				GamePhase: g.Phase,
+			})
+		}
+
+		if p.Role.KnowsMaxes() {
+			for _, m := range g.AliveMaxEvils() {
+				if m != p {
+					p.Views = append(p.Views, &player.View{
+						Player:    m,
+						Attribute: role.MaxEvilAttribute,
+						Hit:       true,
+						GamePhase: g.Phase,
+					})
+				}
+			}
+		}
+
+	}
+}
+
+func (g *Game) randomClear(p *player.Player, test func(*role.Role) bool) *player.Player {
+	for _, i := range rand.Perm(len(g.Players)) {
+		view := g.playerSlice[i]
+		if view == p {
+			continue
+		}
+		if !test(view.Role) {
+			return view
+		}
+	}
+	return nil // should be impossible
+}
+
 func (g *Game) StartGame() error {
 	if g.state > Setup {
 		return &StateError{NeedState: Setup, InState: g.state}
+	}
+
+	// fill in the slice of players now that we have them all
+	for _, p := range g.Players {
+		g.playerSlice = append(g.playerSlice, p)
+		g.AlivePlayers[p.ID] = p
 	}
 
 	if err := g.assignRoles(); err != nil {
 		return err
 	}
 
-	// TODO N0
+	g.processN0()
 
 	g.state = Running
 	return nil
@@ -118,4 +185,14 @@ func (g *Game) Vote(from *player.Player, to *player.Player) error {
 	}
 	// TODO
 	return nil
+}
+
+func (g *Game) AliveMaxEvils() []*player.Player {
+	maxes := []*player.Player{}
+	for _, p := range g.AlivePlayers {
+		if p.Role.IsMaxEvil() {
+			maxes = append(maxes, p)
+		}
+	}
+	return maxes
 }

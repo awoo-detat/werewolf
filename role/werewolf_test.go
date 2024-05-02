@@ -34,14 +34,14 @@ func (suite *WerewolfTestSuite) TestAttributes() {
 // those actions is covered in the game.actions suite.
 func (suite *WerewolfTestSuite) TestActions() {
 	// things a werewolf does
-	assert.True(suite.T(), suite.werewolf.HasNightKill())
+	assert.True(suite.T(), suite.werewolf.CanNightKill())
 	assert.True(suite.T(), suite.werewolf.KnowsMaxes())
 
 	// this a werewolf does not do
-	assert.False(suite.T(), suite.werewolf.ViewsForMax())
+	assert.False(suite.T(), suite.werewolf.CanViewForMax())
 	assert.False(suite.T(), suite.werewolf.HasRandomN0Clear())
-	assert.False(suite.T(), suite.werewolf.ViewsForSeer())
-	assert.False(suite.T(), suite.werewolf.ViewsForAux())
+	assert.False(suite.T(), suite.werewolf.CanViewForSeer())
+	assert.False(suite.T(), suite.werewolf.CanViewForAux())
 
 }
 

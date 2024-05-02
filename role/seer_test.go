@@ -34,13 +34,13 @@ func (suite *SeerTestSuite) TestAttributes() {
 // actions is covered in the game.actions suite.
 func (suite *SeerTestSuite) TestActions() {
 	// things a seer does
-	assert.True(suite.T(), suite.seer.ViewsForMax())
+	assert.True(suite.T(), suite.seer.CanViewForMax())
 	assert.True(suite.T(), suite.seer.HasRandomN0Clear())
 
 	// this a seer does not do
-	assert.False(suite.T(), suite.seer.HasNightKill())
-	assert.False(suite.T(), suite.seer.ViewsForSeer())
-	assert.False(suite.T(), suite.seer.ViewsForAux())
+	assert.False(suite.T(), suite.seer.CanNightKill())
+	assert.False(suite.T(), suite.seer.CanViewForSeer())
+	assert.False(suite.T(), suite.seer.CanViewForAux())
 	assert.False(suite.T(), suite.seer.KnowsMaxes())
 
 }

@@ -33,11 +33,11 @@ func (suite *HunterTestSuite) TestAttributes() {
 // actions is covered in the game.actions suite.
 func (suite *HunterTestSuite) TestActions() {
 	// this a hunter does not do
-	assert.False(suite.T(), suite.hunter.ViewsForMax())
+	assert.False(suite.T(), suite.hunter.CanViewForMax())
 	assert.False(suite.T(), suite.hunter.HasRandomN0Clear())
-	assert.False(suite.T(), suite.hunter.HasNightKill())
-	assert.False(suite.T(), suite.hunter.ViewsForSeer())
-	assert.False(suite.T(), suite.hunter.ViewsForAux())
+	assert.False(suite.T(), suite.hunter.CanNightKill())
+	assert.False(suite.T(), suite.hunter.CanViewForSeer())
+	assert.False(suite.T(), suite.hunter.CanViewForAux())
 	assert.False(suite.T(), suite.hunter.KnowsMaxes())
 }
 

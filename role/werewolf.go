@@ -10,6 +10,6 @@ func Werewolf() *Role {
 		Parity:         -1,
 		Alive:          true,
 		Actions:        knowsMaxes | nightKill,
-		Attributes:     maxEvil,
+		Attributes:     MaxEvilAttribute,
 	}
 }

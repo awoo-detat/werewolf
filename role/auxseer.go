@@ -10,6 +10,6 @@ func AuxSeer() *Role {
 		Parity:         1,
 		Alive:          true,
 		Actions:        viewForAux | randomN0Clear,
-		Attributes:     seer,
+		Attributes:     SeerAttribute,
 	}
 }

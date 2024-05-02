@@ -9,10 +9,10 @@ const (
 type Attribute int
 
 const (
-	maxEvil Attribute = 1 << iota
-	auxEvil
-	seer
-	tinker
+	MaxEvilAttribute Attribute = 1 << iota
+	AuxEvilAttribute
+	SeerAttribute
+	TinkerAttribute
 )
 
 type Action int
@@ -40,58 +40,58 @@ type Role struct {
 
 // IsMaxEvil returns whether or not a player is a max evil (ie a Werewolf). Another player viewing for max evil should use ViewForMaxEvil().
 func (r *Role) IsMaxEvil() bool {
-	return r.Attributes&maxEvil > 0
+	return r.Attributes&MaxEvilAttribute > 0
 }
 
-// ViewForMaxEvil allows seers to view if a role is max evil. It differs from IsMaxEvil because the Tinker can invert the result.
+// ViewForMaxEvil allows Seers to view if a role is max evil. It differs from IsMaxEvil because the Tinker can invert the result.
 func (r *Role) ViewForMaxEvil() bool {
-	if r.Attributes&tinker > 0 {
+	if r.Attributes&TinkerAttribute > 0 {
 		return !r.IsMaxEvil()
 	}
 	return r.IsMaxEvil()
 }
 
-// IsAuxEvil returns whether or not a player is an aux evil (ie a Cultist).
+// IsAuxEvil returns whether or not a player is aux evil (ie a Cultist).
 func (r *Role) IsAuxEvil() bool {
-	return r.Attributes&auxEvil > 0
+	return r.Attributes&AuxEvilAttribute > 0
 }
 
-// ViewForAuxEvil allows seers to view if a role is aux evil. It differs from IsAuxEvil because the Tinker
+// ViewForAuxEvil allows Seers to view if a role is aux evil. It differs from IsAuxEvil because the tinker
 // can invert the result.
 func (r *Role) ViewForAuxEvil() bool {
-	if r.Attributes&tinker > 0 {
+	if r.Attributes&TinkerAttribute > 0 {
 		return !r.IsAuxEvil()
 	}
 	return r.IsAuxEvil()
 }
 
-// IsSeer returns whether or not a player is a seer
+// IsSeer returns whether or not a player is a seer.
 func (r *Role) IsSeer() bool {
-	return r.Attributes&seer > 0
+	return r.Attributes&SeerAttribute > 0
 }
 
 // ViewForSeer allows sorcerers to view if a role is a seer. It differs from IsSeer because the
-// Tinker can invert the result.
+// tinker can invert the result.
 func (r *Role) ViewForSeer() bool {
-	if r.Attributes&tinker > 0 {
+	if r.Attributes&TinkerAttribute > 0 {
 		return !r.IsSeer()
 	}
 	return r.IsSeer()
 }
 
-func (r *Role) ViewsForMax() bool {
+func (r *Role) CanViewForMax() bool {
 	return r.Actions&viewForMax > 0
 }
 
-func (r *Role) HasNightKill() bool {
+func (r *Role) CanNightKill() bool {
 	return r.Actions&nightKill > 0
 }
 
-func (r *Role) ViewsForSeer() bool {
+func (r *Role) CanViewForSeer() bool {
 	return r.Actions&viewForSeer > 0
 }
 
-func (r *Role) ViewsForAux() bool {
+func (r *Role) CanViewForAux() bool {
 	return r.Actions&viewForAux > 0
 }
 
@@ -103,9 +103,9 @@ func (r *Role) KnowsMaxes() bool {
 	return r.Actions&knowsMaxes > 0
 }
 
-// SetTinker makes a role a tinker: all views will be the inverse of the truth
+// SetTinker makes a role a Tinker: all views will be the inverse of the truth
 func (r *Role) SetTinker() {
-	r.Attributes = r.Attributes | tinker
+	r.Attributes = r.Attributes | TinkerAttribute
 }
 
 // Kill attempts to kill the player. If they had more than 1 health (ie

@@ -7,14 +7,16 @@ import (
 )
 
 type Player struct {
-	ID   uuid.UUID
-	Name string
-	Role *role.Role
+	ID    uuid.UUID
+	Name  string
+	Role  *role.Role
+	Views []*View
 }
 
 func NewPlayer() *Player {
 	p := &Player{
-		ID: uuid.New(),
+		ID:    uuid.New(),
+		Views: []*View{},
 	}
 	return p
 }
