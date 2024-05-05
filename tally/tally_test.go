@@ -47,7 +47,7 @@ func TestTally(t *testing.T) {
 	})
 
 	t.Run("Vote adds to the tally", func(t *testing.T) {
-		gt.Vote(sigafoos, tommy)
+		gt.Vote(&player.FingerPoint{From: sigafoos, To: tommy})
 
 		leader := gt.List[0]
 		assert.Equal(tommy, leader.Player, "Tommy has the most votes")
@@ -57,7 +57,7 @@ func TestTally(t *testing.T) {
 	})
 
 	t.Run("LHLV", func(t *testing.T) {
-		gt.Vote(tommy, dake)
+		gt.Vote(&player.FingerPoint{From: tommy, To: dake})
 
 		leader := gt.List[0]
 		assert.Equal(tommy, leader.Player, "Tommy is winning by LHLV")
@@ -73,7 +73,7 @@ func TestTally(t *testing.T) {
 	})
 
 	t.Run("changing vote updates both tallies", func(t *testing.T) {
-		gt.Vote(sigafoos, dake)
+		gt.Vote(&player.FingerPoint{From: sigafoos, To: dake})
 
 		leader := gt.List[0]
 		assert.Equal(dake, leader.Player, "Dake now has two votes")

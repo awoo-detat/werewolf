@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"math"
 	"math/rand"
+	"slices"
 
 	"github.com/awoo-detat/werewolf/player"
 	"github.com/awoo-detat/werewolf/role"
@@ -25,6 +26,7 @@ type Game struct {
 	state        GameState
 	Phase        int
 	Tally        *tally.Tally
+	nightActions map[*player.Player]*player.FingerPoint
 	Winner       role.PlayerType
 }
 
@@ -54,6 +56,7 @@ func NewGame(p *player.Player) *Game {
 		Players:      make(map[uuid.UUID]*player.Player),
 		VotingMethod: InstaKill,
 		AlivePlayers: make(map[uuid.UUID]*player.Player),
+		nightActions: make(map[*player.Player]*player.FingerPoint),
 		playerSlice:  []*player.Player{},
 	}
 	g.AddPlayer(p)
@@ -101,36 +104,23 @@ func (g *Game) assignRoles() error {
 	return nil
 }
 
+// this selects random clears for those that get them, and informs
+// the roles that know maxes of those players
 func (g *Game) processN0() {
 	for _, p := range g.Players {
 		if p.Role.CanViewForMax() && p.Role.HasRandomN0Clear() {
 			view := g.randomClear(p, func(r *role.Role) bool { return r.ViewForMaxEvil() })
-			p.Views = append(p.Views, &player.View{
-				Player:    view,
-				Attribute: role.MaxEvilAttribute,
-				Hit:       false,
-				GamePhase: g.Phase,
-			})
+			g.nightActions[p] = &player.FingerPoint{From: p, To: view}
 		}
 
 		if p.Role.CanViewForSeer() && p.Role.HasRandomN0Clear() {
 			view := g.randomClear(p, func(r *role.Role) bool { return r.ViewForSeer() })
-			p.Views = append(p.Views, &player.View{
-				Player:    view,
-				Attribute: role.SeerAttribute,
-				Hit:       false,
-				GamePhase: g.Phase,
-			})
+			g.nightActions[p] = &player.FingerPoint{From: p, To: view}
 		}
 
 		if p.Role.CanViewForAux() && p.Role.HasRandomN0Clear() {
 			view := g.randomClear(p, func(r *role.Role) bool { return r.ViewForAuxEvil() })
-			p.Views = append(p.Views, &player.View{
-				Player:    view,
-				Attribute: role.AuxEvilAttribute,
-				Hit:       false,
-				GamePhase: g.Phase,
-			})
+			g.nightActions[p] = &player.FingerPoint{From: p, To: view}
 		}
 
 		if p.Role.KnowsMaxes() {
@@ -145,8 +135,8 @@ func (g *Game) processN0() {
 				}
 			}
 		}
-
 	}
+	g.processNightActions()
 }
 
 func (g *Game) randomClear(p *player.Player, test func(*role.Role) bool) *player.Player {
@@ -177,14 +167,22 @@ func (g *Game) Start() error {
 		return err
 	}
 
+	g.state = Running
 	g.processN0()
 
-	g.Tally = tally.New(g.playerSlice)
-	g.state = Running
 	return nil
 }
 
-func (g *Game) Vote(from *player.Player, to *player.Player) error {
+func (g *Game) nextPhase() {
+	g.Phase++
+	// new day new me, reset everything
+	if g.IsDay() {
+		g.Tally = tally.New(g.playerSlice)
+		g.nightActions = make(map[*player.Player]*player.FingerPoint)
+	}
+}
+
+func (g *Game) Vote(fp *player.FingerPoint) error {
 	if g.state != Running {
 		return &StateError{NeedState: Running, InState: g.state}
 	}
@@ -192,7 +190,14 @@ func (g *Game) Vote(from *player.Player, to *player.Player) error {
 		return &PhaseError{GamePhase: g.Phase}
 	}
 
-	g.Tally.Vote(from, to)
+	if !fp.From.Role.Alive {
+		return fmt.Errorf("%s is dead and cannot vote", fp.From)
+	}
+	if !fp.To.Role.Alive {
+		return fmt.Errorf("%s is dead and cannot be voted for", fp.To)
+	}
+
+	g.Tally.Vote(fp)
 
 	switch g.VotingMethod {
 	case InstaKill:
@@ -218,7 +223,7 @@ func (g *Game) checkForInstaKillDayEnd() {
 
 	g.KillPlayer(leader.Player)
 	if g.state == Running {
-		g.Phase++
+		g.nextPhase()
 	}
 }
 
@@ -228,6 +233,7 @@ func (g *Game) KillPlayer(p *player.Player) {
 		return
 	}
 	delete(g.AlivePlayers, p.ID)
+	g.RevealPlayer(p)
 
 	maxes, nonmaxes := g.AlivePlayersByType()
 	parity := g.Parity()
@@ -278,9 +284,95 @@ func (g *Game) AlivePlayersByType() (maxes []*player.Player, nonmaxes []*player.
 }
 
 func (g *Game) IsDay() bool {
-	return g.Phase%2 == 0
+	return g.Phase%2 == 1
 }
 
 func (g *Game) IsNight() bool {
 	return !g.IsDay()
+}
+
+func (g *Game) SetNightAction(fp *player.FingerPoint) error {
+	if !fp.From.Role.Alive {
+		return fmt.Errorf("%s is dead and cannot have a night action", fp.From)
+	}
+	if !fp.To.Role.Alive {
+		return fmt.Errorf("%s is dead and cannot be targeted by a night action", fp.To)
+	}
+
+	// this allows you to change your mind and choose someone else
+	g.nightActions[fp.From] = fp
+	neededPlayers := g.alivePlayersWithNightActions()
+	neededPlayers = slices.DeleteFunc(neededPlayers, func(p *player.Player) bool {
+		_, ok := g.nightActions[p]
+		return ok
+	})
+	if len(neededPlayers) == 0 {
+		g.processNightActions()
+	} else {
+		slog.Info("still need night actions", "needed", neededPlayers)
+	}
+	return nil
+}
+
+func (g *Game) alivePlayersWithNightActions() []*player.Player {
+	players := []*player.Player{}
+	for _, p := range g.AlivePlayers {
+		switch {
+		case p.Role.CanViewForMax():
+			players = append(players, p)
+		case p.Role.CanNightKill():
+			players = append(players, p)
+		case p.Role.CanViewForSeer():
+			players = append(players, p)
+		case p.Role.CanViewForAux():
+			players = append(players, p)
+		}
+	}
+	return players
+}
+
+// this assumes you will only ever have one night action...
+func (g *Game) processNightActions() {
+	var nk *player.Player
+	for _, fp := range g.nightActions {
+		switch {
+		case fp.From.Role.CanViewForMax():
+			fp.From.Views = append(fp.From.Views, &player.View{
+				Player:    fp.To,
+				Attribute: role.MaxEvilAttribute,
+				Hit:       fp.To.Role.ViewForMaxEvil(),
+				GamePhase: g.Phase,
+			})
+		case fp.From.Role.CanNightKill():
+			nk = fp.To
+		case fp.From.Role.CanViewForSeer():
+			fp.From.Views = append(fp.From.Views, &player.View{
+				Player:    fp.To,
+				Attribute: role.SeerAttribute,
+				Hit:       fp.To.Role.ViewForSeer(),
+				GamePhase: g.Phase,
+			})
+		case fp.From.Role.CanViewForAux():
+			fp.From.Views = append(fp.From.Views, &player.View{
+				Player:    fp.To,
+				Attribute: role.AuxEvilAttribute,
+				Hit:       fp.To.Role.ViewForAuxEvil(),
+				GamePhase: g.Phase,
+			})
+		default:
+			// TODO keep track of "most suspicious" (#4)
+		}
+	}
+
+	// TODO this prioritizes the "last" wolf if there are multiple
+	if nk != nil {
+		g.KillPlayer(nk)
+	}
+	if g.state == Running {
+		g.nextPhase()
+	}
+}
+
+func (g *Game) RevealPlayer(p *player.Player) {
+	// TODO #5
 }
