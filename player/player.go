@@ -42,4 +42,5 @@ func (p *Player) SetRole(r *role.Role) {
 
 func (p *Player) AddView(v *View) {
 	p.Views = append(p.Views, v)
+	slog.Info("adding view", "view", v, "player", p)
 }
