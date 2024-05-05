@@ -17,6 +17,20 @@ const (
 	TinkerAttribute
 )
 
+func (a Attribute) String() string {
+	switch a {
+	case MaxEvilAttribute:
+		return "Max Evil"
+	case AuxEvilAttribute:
+		return "Aux Evil"
+	case SeerAttribute:
+		return "Seer"
+	case TinkerAttribute:
+		return "Tinker"
+	}
+	return ""
+}
+
 type Action int
 
 const (

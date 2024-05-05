@@ -39,3 +39,7 @@ func (p *Player) SetRole(r *role.Role) {
 	p.Role = r
 	slog.Info("setting player role", "player", p, "role", r)
 }
+
+func (p *Player) AddView(v *View) {
+	p.Views = append(p.Views, v)
+}
