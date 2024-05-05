@@ -204,28 +204,39 @@ func TestGame(t *testing.T) {
 		if p.Role.IsMaxEvil() {
 			if wolf1 == nil {
 				wolf1 = p
+				wolf1.SetName("Wolf 1")
 			} else {
 				wolf2 = p
+				wolf2.SetName("Wolf 2")
 			}
 		} else if p.Role.IsAuxEvil() {
 			sorcerer = p
+			sorcerer.SetName("Sorcerer")
 		} else if p.Role.Parity == 2 {
 			hunter = p
+			hunter.SetName("Hunter")
 		} else if p.Role.IsSeer() {
 			seer = p
+			seer.SetName("Seer")
 		} else {
 			if v1 == nil {
 				v1 = p
+				v1.SetName("Villager 1")
 			} else if v2 == nil {
 				v2 = p
+				v2.SetName("Villager 2")
 			} else if v3 == nil {
 				v3 = p
+				v3.SetName("Villager 3")
 			} else if v4 == nil {
 				v4 = p
+				v4.SetName("Villager 4")
 			} else if v5 == nil {
 				v5 = p
+				v5.SetName("Villager 5")
 			} else {
 				v6 = p
+				v6.SetName("Villager 6")
 			}
 		}
 	}
@@ -277,7 +288,8 @@ func TestGame(t *testing.T) {
 		assert.Empty(v5.Views)
 		assert.Empty(v6.Views)
 
-		assert.Equal(0, g.Phase)
+		// now it's day!
+		assert.Equal(1, g.Phase)
 		assert.Equal(Running, g.State())
 		assert.True(g.IsDay())
 		assert.False(g.IsNight())
@@ -286,54 +298,278 @@ func TestGame(t *testing.T) {
 	t.Run("D1, villager dies", func(t *testing.T) {
 		assert.Equal(2, len(g.AliveMaxEvils()))
 		assert.True(g.IsDay())
-		assert.Equal(0, g.Phase)
-
-		assert.Nil(g.Vote(wolf1, v1)) // 1/6 needed
-		assert.Nil(g.Vote(wolf2, v2))
-		assert.Nil(g.Vote(sorcerer, v1)) // 2/6
-		assert.Nil(g.Vote(hunter, seer))
-		assert.Nil(g.Vote(seer, v3))
-		assert.Nil(g.Vote(v1, wolf1))
-		assert.Nil(g.Vote(v2, v1)) // 3/6
-		assert.Nil(g.Vote(v3, hunter))
-		assert.Nil(g.Vote(v4, v5))
-		assert.Nil(g.Vote(v5, v1)) // 4/6
-		assert.Nil(g.Vote(v6, v5))
-
-		assert.True(g.IsDay())
-		assert.Equal(0, g.Phase)
-
-		assert.Nil(g.Vote(seer, v1)) // 5/6
-		assert.True(g.IsDay())
-		assert.Equal(0, g.Phase)
-
-		assert.Nil(g.Vote(hunter, v1)) // 6/6
-		assert.True(g.IsNight())
 		assert.Equal(1, g.Phase)
+		// seer can do a view already!
+		assert.Nil(g.SetNightAction(&player.FingerPoint{From: seer, To: v1}))
+
+		assert.Nil(g.Vote(&player.FingerPoint{From: wolf1, To: v1})) // 1/6 needed
+		assert.Nil(g.Vote(&player.FingerPoint{From: wolf2, To: v2}))
+		assert.Nil(g.Vote(&player.FingerPoint{From: sorcerer, To: v1})) // 2/6
+		assert.Nil(g.Vote(&player.FingerPoint{From: hunter, To: seer}))
+		assert.Nil(g.Vote(&player.FingerPoint{From: seer, To: v3}))
+		assert.Nil(g.Vote(&player.FingerPoint{From: v1, To: wolf1}))
+		assert.Nil(g.Vote(&player.FingerPoint{From: v2, To: v1})) // 3/6
+		assert.Nil(g.Vote(&player.FingerPoint{From: v3, To: hunter}))
+		assert.Nil(g.Vote(&player.FingerPoint{From: v4, To: v5}))
+		assert.Nil(g.Vote(&player.FingerPoint{From: v5, To: v1})) // 4/6
+		assert.Nil(g.Vote(&player.FingerPoint{From: v6, To: v5}))
+
+		assert.True(g.IsDay())
+		assert.Equal(1, g.Phase)
+
+		assert.Nil(g.Vote(&player.FingerPoint{From: seer, To: v1})) // 5/6
+		assert.True(g.IsDay())
+		assert.Equal(1, g.Phase)
+
+		assert.Nil(g.Vote(&player.FingerPoint{From: hunter, To: v1})) // 6/6
+		assert.True(g.IsNight())
+		assert.Equal(2, g.Phase)
+		assert.False(v1.Role.Alive)
 	})
 
 	t.Run("N1, villager eaten", func(t *testing.T) {
 		// can't vote at night
+		assert.Error(g.Vote(&player.FingerPoint{From: wolf1, To: v2}))
+
+		assert.Nil(g.SetNightAction(&player.FingerPoint{From: wolf1, To: v2}))
+		assert.Nil(g.SetNightAction(&player.FingerPoint{From: wolf2, To: v3})) // this one "takes"
+		// seer changing their view since v1 is super dead
+		assert.Nil(g.SetNightAction(&player.FingerPoint{From: seer, To: v2}))
+		assert.Error(g.SetNightAction(&player.FingerPoint{From: v1, To: wolf1}))
+		assert.Error(g.SetNightAction(&player.FingerPoint{From: sorcerer, To: v1}))
+		// sure why not have fun
+		assert.Nil(g.SetNightAction(&player.FingerPoint{From: v3, To: v2}))
+		assert.True(g.IsNight())
+		assert.Equal(2, g.Phase)
+
+		assert.Nil(g.SetNightAction(&player.FingerPoint{From: sorcerer, To: hunter}))
+		assert.True(g.IsDay())
+		assert.Equal(3, g.Phase)
+
+		assert.False(v3.Role.Alive)
+
+		// no new views
+		assert.Len(wolf1.Views, 1)
+		assert.Len(wolf2.Views, 1)
+		assert.Empty(hunter.Views)
+		assert.Empty(v1.Views)
+		assert.Empty(v2.Views)
+		assert.Empty(v3.Views)
+		assert.Empty(v4.Views)
+		assert.Empty(v5.Views)
+		assert.Empty(v6.Views)
+
+		// sorc has a new view
+		assert.Len(sorcerer.Views, 2)
+		sorcView := sorcerer.Views[1]
+		assert.Equal(role.SeerAttribute, sorcView.Attribute)
+		assert.Equal(hunter, sorcView.Player)
+		assert.False(sorcView.Hit)
+		assert.Equal(2, sorcView.GamePhase)
+
+		// seer has a new view
+		assert.Len(seer.Views, 2)
+		seerView := seer.Views[1]
+		assert.Equal(role.MaxEvilAttribute, seerView.Attribute)
+		assert.Equal(v2, seerView.Player)
+		assert.False(seerView.Hit)
+		assert.Equal(2, seerView.GamePhase)
+
 	})
 
 	t.Run("D2, villager dies", func(t *testing.T) {
+		// new day!
+		assert.Empty(g.Tally.List[0].Votes)
+		assert.Empty(g.nightActions)
+		assert.Equal(2, len(g.AliveMaxEvils()))
+		assert.True(g.IsDay())
+		assert.Equal(3, g.Phase)
+		assert.Equal(9, len(g.AlivePlayers))
+
+		assert.Error(g.Vote(&player.FingerPoint{From: wolf1, To: v1}))
+		assert.Error(g.Vote(&player.FingerPoint{From: v1, To: wolf1}))
+		assert.Nil(g.Vote(&player.FingerPoint{From: wolf1, To: v2})) // 1/5 needed
+		assert.Nil(g.Vote(&player.FingerPoint{From: wolf2, To: seer}))
+		assert.Nil(g.Vote(&player.FingerPoint{From: sorcerer, To: v2})) // 2/5
+		assert.Nil(g.Vote(&player.FingerPoint{From: hunter, To: seer}))
+		assert.Nil(g.Vote(&player.FingerPoint{From: seer, To: v4}))
+		assert.Nil(g.Vote(&player.FingerPoint{From: v2, To: hunter}))
+		assert.Nil(g.Vote(&player.FingerPoint{From: v4, To: v5}))
+		assert.Nil(g.Vote(&player.FingerPoint{From: v5, To: v2})) // 3/5
+		assert.Nil(g.Vote(&player.FingerPoint{From: v6, To: v5}))
+		assert.Nil(g.Vote(&player.FingerPoint{From: seer, To: v2}))   // 4/5
+		assert.Nil(g.Vote(&player.FingerPoint{From: hunter, To: v2})) // 5/5
+
+		assert.True(g.IsNight())
+		assert.Equal(4, g.Phase)
+		assert.False(v2.Role.Alive)
 	})
 
 	t.Run("N2, double hits, villager dies", func(t *testing.T) {
+		assert.Nil(g.SetNightAction(&player.FingerPoint{From: wolf1, To: v4}))
+		assert.Nil(g.SetNightAction(&player.FingerPoint{From: wolf2, To: v4}))
+		assert.Nil(g.SetNightAction(&player.FingerPoint{From: seer, To: wolf1}))
+		assert.Nil(g.SetNightAction(&player.FingerPoint{From: sorcerer, To: seer}))
+
+		assert.True(g.IsDay())
+		assert.Equal(5, g.Phase)
+
+		assert.False(v4.Role.Alive)
+
+		// no new views
+		assert.Len(wolf1.Views, 1)
+		assert.Len(wolf2.Views, 1)
+		assert.Empty(hunter.Views)
+		assert.Empty(v1.Views)
+		assert.Empty(v2.Views)
+		assert.Empty(v3.Views)
+		assert.Empty(v4.Views)
+		assert.Empty(v5.Views)
+		assert.Empty(v6.Views)
+
+		// sorc has a new view
+		assert.Len(sorcerer.Views, 3)
+		sorcView := sorcerer.Views[2]
+		assert.Equal(role.SeerAttribute, sorcView.Attribute)
+		assert.Equal(seer, sorcView.Player)
+		assert.True(sorcView.Hit)
+		assert.Equal(4, sorcView.GamePhase)
+
+		// seer has a new view
+		assert.Len(seer.Views, 3)
+		seerView := seer.Views[2]
+		assert.Equal(role.MaxEvilAttribute, seerView.Attribute)
+		assert.Equal(wolf1, seerView.Player)
+		assert.True(seerView.Hit)
+		assert.Equal(4, seerView.GamePhase)
 	})
 
 	t.Run("D3, wolf dies", func(t *testing.T) {
+		assert.Empty(g.Tally.List[0].Votes)
+		assert.Empty(g.nightActions)
+		assert.Equal(2, len(g.AliveMaxEvils()))
+		assert.True(g.IsDay())
+		assert.Equal(5, g.Phase)
+		assert.Equal(7, len(g.AlivePlayers))
+
+		assert.Nil(g.Vote(&player.FingerPoint{From: wolf1, To: seer}))
+		assert.Nil(g.Vote(&player.FingerPoint{From: wolf2, To: wolf1})) // 1/4
+		assert.Nil(g.Vote(&player.FingerPoint{From: sorcerer, To: hunter}))
+		assert.Nil(g.Vote(&player.FingerPoint{From: hunter, To: wolf1})) // 2/4
+		assert.Nil(g.Vote(&player.FingerPoint{From: seer, To: wolf1}))   // 3/4
+
+		assert.True(g.IsDay())
+		assert.Equal(5, g.Phase)
+		assert.Nil(g.Vote(&player.FingerPoint{From: v5, To: wolf1}))
+		// didn't even need v6
+
+		assert.True(g.IsNight())
+		assert.Equal(6, g.Phase)
+		assert.False(wolf1.Role.Alive)
 	})
 
 	t.Run("N3, seer dies", func(t *testing.T) {
+		assert.Nil(g.SetNightAction(&player.FingerPoint{From: wolf2, To: seer}))
+		assert.Nil(g.SetNightAction(&player.FingerPoint{From: seer, To: sorcerer}))
+		assert.True(g.IsNight())
+		assert.Nil(g.SetNightAction(&player.FingerPoint{From: sorcerer, To: seer}))
+
+		assert.True(g.IsDay())
+		assert.Equal(7, g.Phase)
+
+		assert.False(seer.Role.Alive)
+
+		// no new views
+		assert.Len(wolf1.Views, 1)
+		assert.Len(wolf2.Views, 1)
+		assert.Empty(hunter.Views)
+		assert.Empty(v1.Views)
+		assert.Empty(v2.Views)
+		assert.Empty(v3.Views)
+		assert.Empty(v4.Views)
+		assert.Empty(v5.Views)
+		assert.Empty(v6.Views)
+
+		// sorc has a new view
+		assert.Len(sorcerer.Views, 4)
+		sorcView := sorcerer.Views[3]
+		assert.Equal(role.SeerAttribute, sorcView.Attribute)
+		assert.Equal(seer, sorcView.Player)
+		assert.True(sorcView.Hit)
+		assert.Equal(6, sorcView.GamePhase)
+
+		// seer has a new view, even though they're dead
+		assert.Len(seer.Views, 4)
+		seerView := seer.Views[3]
+		assert.Equal(role.MaxEvilAttribute, seerView.Attribute)
+		assert.Equal(sorcerer, seerView.Player)
+		assert.False(seerView.Hit)
+		assert.Equal(6, seerView.GamePhase)
+
 	})
 
 	t.Run("D4, sorc dies", func(t *testing.T) {
+		assert.Empty(g.Tally.List[0].Votes)
+		assert.Empty(g.nightActions)
+		assert.Equal(1, len(g.AliveMaxEvils()))
+		assert.True(g.IsDay())
+		assert.Equal(7, g.Phase)
+		assert.Equal(5, len(g.AlivePlayers))
+
+		assert.Nil(g.Vote(&player.FingerPoint{From: wolf2, To: hunter}))
+		assert.Nil(g.Vote(&player.FingerPoint{From: sorcerer, To: hunter}))
+		assert.Nil(g.Vote(&player.FingerPoint{From: hunter, To: sorcerer})) // 1/3
+		assert.Nil(g.Vote(&player.FingerPoint{From: v5, To: sorcerer}))     // 2/3
+		assert.True(g.IsDay())
+		assert.Equal(7, g.Phase)
+		assert.Nil(g.Vote(&player.FingerPoint{From: v6, To: sorcerer})) // 3/3
+
+		assert.True(g.IsNight())
+		assert.Equal(8, g.Phase)
+		assert.False(sorcerer.Role.Alive)
 	})
 
 	t.Run("N4, villager dies", func(t *testing.T) {
+		assert.Nil(g.SetNightAction(&player.FingerPoint{From: wolf2, To: v5}))
+
+		assert.True(g.IsDay())
+		assert.Equal(9, g.Phase)
+
+		assert.False(v5.Role.Alive)
+
+		// no new views
+		assert.Len(wolf1.Views, 1)
+		assert.Len(wolf2.Views, 1)
+		assert.Empty(hunter.Views)
+		assert.Empty(v1.Views)
+		assert.Empty(v2.Views)
+		assert.Empty(v3.Views)
+		assert.Empty(v4.Views)
+		assert.Empty(v5.Views)
+		assert.Empty(v6.Views)
+		assert.Len(sorcerer.Views, 4)
+		assert.Len(seer.Views, 4)
+
 	})
 
-	t.Run("D5, villager dies, good wins", func(t *testing.T) {
+	t.Run("D5, villager dies, good wins by hunter victory", func(t *testing.T) {
+		assert.Empty(g.Tally.List[0].Votes)
+		assert.Empty(g.nightActions)
+		assert.Equal(1, len(g.AliveMaxEvils()))
+		assert.True(g.IsDay())
+		assert.Equal(9, g.Phase)
+		assert.Equal(3, len(g.AlivePlayers))
+
+		assert.Nil(g.Vote(&player.FingerPoint{From: wolf2, To: v6})) // 1/2 needed
+		assert.Nil(g.Vote(&player.FingerPoint{From: v6, To: hunter}))
+		assert.True(g.IsDay())
+		assert.Equal(9, g.Phase)
+		assert.Nil(g.Vote(&player.FingerPoint{From: hunter, To: v6})) // 2/2
+
+		assert.False(v6.Role.Alive)
+		assert.True(wolf2.Role.Alive)
+		assert.Len(g.AliveMaxEvils(), 1, "didn't need to kill all wolves")
+		assert.Equal(Finished, g.State())
+		assert.Equal(role.Good, g.Winner)
 	})
 }

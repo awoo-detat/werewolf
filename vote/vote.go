@@ -12,10 +12,10 @@ type Vote struct {
 	Timestamp time.Time
 }
 
-func New(from *player.Player, to *player.Player) *Vote {
+func New(fp *player.FingerPoint) *Vote {
 	return &Vote{
-		Candidate: to,
-		Voter:     from,
+		Candidate: fp.To,
+		Voter:     fp.From,
 		Timestamp: time.Now(),
 	}
 }

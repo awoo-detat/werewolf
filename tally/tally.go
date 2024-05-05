@@ -38,16 +38,16 @@ func New(players []*player.Player) *Tally {
 	return t
 }
 
-func (t *Tally) Vote(from *player.Player, to *player.Player) {
+func (t *Tally) Vote(fp *player.FingerPoint) {
 	// if they've voted for anyone before, remove it from the tally
-	if current := t.Inverted[from]; current != nil {
+	if current := t.Inverted[fp.From]; current != nil {
 		t.voteMap[current.Candidate].RemoveVote(current)
 	}
-	v := vote.New(from, to)
+	v := vote.New(fp)
 	// add to the tally
-	t.voteMap[to].AddVote(v)
+	t.voteMap[fp.To].AddVote(v)
 	// update the inverted tally
-	t.Inverted[from] = v
+	t.Inverted[fp.From] = v
 
 	sort.Slice(t.List, func(i, j int) bool {
 		return len(t.List[i].Votes) > len(t.List[j].Votes)
