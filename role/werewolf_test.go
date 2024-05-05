@@ -47,7 +47,7 @@ func (suite *WerewolfTestSuite) TestActions() {
 
 // TestKill ensures that when you kill a werewolf, they stay down.
 func (suite *WerewolfTestSuite) TestKill() {
-	assert.False(suite.T(), suite.werewolf.Kill())
+	assert.True(suite.T(), suite.werewolf.Kill())
 }
 
 func TestWerewolfTestSuite(t *testing.T) {

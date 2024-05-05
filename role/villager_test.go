@@ -42,7 +42,7 @@ func (suite *VillagerTestSuite) TestActions() {
 
 // TestKill ensures that when you kill a villager, they stay down.
 func (suite *VillagerTestSuite) TestKill() {
-	assert.False(suite.T(), suite.villager.Kill())
+	assert.True(suite.T(), suite.villager.Kill())
 }
 
 func TestVillagerTestSuite(t *testing.T) {

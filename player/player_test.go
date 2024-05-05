@@ -16,6 +16,7 @@ func TestInitialization(t *testing.T) {
 	assert.Empty(p.Name)
 	assert.Empty(p.Views)
 	assert.Nil(p.Role)
+	assert.Equal(p.ID.String(), p.String())
 }
 
 func TestSetName(t *testing.T) {
@@ -25,6 +26,7 @@ func TestSetName(t *testing.T) {
 	p.SetName(name)
 
 	assert.Equal(t, name, p.Name)
+	assert.Equal(t, name, p.String())
 }
 
 func TestSetRole(t *testing.T) {

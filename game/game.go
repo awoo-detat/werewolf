@@ -2,11 +2,14 @@ package game
 
 import (
 	"fmt"
+	"log/slog"
+	"math"
 	"math/rand"
 
 	"github.com/awoo-detat/werewolf/player"
 	"github.com/awoo-detat/werewolf/role"
 	"github.com/awoo-detat/werewolf/role/roleset"
+	"github.com/awoo-detat/werewolf/tally"
 
 	"github.com/google/uuid"
 )
@@ -21,6 +24,8 @@ type Game struct {
 	Roleset      *roleset.Roleset
 	state        GameState
 	Phase        int
+	Tally        *tally.Tally
+	Winner       role.PlayerType
 }
 
 type GameState int
@@ -62,6 +67,7 @@ func (g *Game) State() GameState {
 
 func (g *Game) AddPlayer(p *player.Player) {
 	g.Players[p.ID] = p
+	slog.Info("player added", "player", p)
 }
 
 func (g *Game) ChooseRoleset(slug string) error {
@@ -74,6 +80,7 @@ func (g *Game) ChooseRoleset(slug string) error {
 	}
 
 	g.Roleset = rs
+	slog.Info("roleset chosen", "roleset", rs)
 	return nil
 }
 
@@ -155,7 +162,7 @@ func (g *Game) randomClear(p *player.Player, test func(*role.Role) bool) *player
 	return nil // should be impossible
 }
 
-func (g *Game) StartGame() error {
+func (g *Game) Start() error {
 	if g.state > Setup {
 		return &StateError{NeedState: Setup, InState: g.state}
 	}
@@ -172,6 +179,7 @@ func (g *Game) StartGame() error {
 
 	g.processN0()
 
+	g.Tally = tally.New(g.playerSlice)
 	g.state = Running
 	return nil
 }
@@ -180,19 +188,99 @@ func (g *Game) Vote(from *player.Player, to *player.Player) error {
 	if g.state != Running {
 		return &StateError{NeedState: Running, InState: g.state}
 	}
-	if g.Phase%2 != 0 {
+	if g.IsNight() {
 		return &PhaseError{GamePhase: g.Phase}
 	}
-	// TODO
+
+	g.Tally.Vote(from, to)
+
+	switch g.VotingMethod {
+	case InstaKill:
+		g.checkForInstaKillDayEnd()
+	case InstaKillWithDelay:
+		return fmt.Errorf("InstaKillWithDelay is not supported")
+	case Timed:
+		return fmt.Errorf("Timed is not supported")
+	}
+
 	return nil
 }
 
+func (g *Game) checkForInstaKillDayEnd() {
+	leader := g.Tally.List[0]
+	// TODO? if there's an even number this is first-to-half...
+	need := math.Ceil(float64(len(g.AlivePlayers)) / 2)
+	have := float64(len(leader.Votes))
+	if have < need {
+		slog.Info("day not over", "have", have, "need", need)
+		return
+	}
+
+	g.KillPlayer(leader.Player)
+	if g.state == Running {
+		g.Phase++
+	}
+}
+
+func (g *Game) KillPlayer(p *player.Player) {
+	killed := p.Role.Kill()
+	if !killed {
+		return
+	}
+	delete(g.AlivePlayers, p.ID)
+
+	maxes, nonmaxes := g.AlivePlayersByType()
+	parity := g.Parity()
+	equality := len(maxes) == len(nonmaxes)
+	switch {
+	case len(maxes) == 0:
+		g.EndGame(role.Good)
+	case parity < 0:
+		g.EndGame(role.Evil)
+	case parity == 0 && equality:
+		g.EndGame(role.Evil)
+	case equality:
+		// due to a hunter, evil loses
+		// TODO: what will/should happen with ancient WW vs hunter?
+		g.EndGame(role.Good)
+	}
+}
+
+func (g *Game) Parity() int {
+	parity := 0
+	for _, p := range g.AlivePlayers {
+		parity += p.Role.Parity
+	}
+	slog.Info("parity calculated", "parity", parity)
+	return parity
+}
+
+func (g *Game) EndGame(winner role.PlayerType) {
+	slog.Info("game over", "winner", winner)
+	g.state = Finished
+	g.Winner = winner
+}
+
 func (g *Game) AliveMaxEvils() []*player.Player {
-	maxes := []*player.Player{}
+	maxes, _ := g.AlivePlayersByType()
+	return maxes
+}
+
+func (g *Game) AlivePlayersByType() (maxes []*player.Player, nonmaxes []*player.Player) {
 	for _, p := range g.AlivePlayers {
 		if p.Role.IsMaxEvil() {
 			maxes = append(maxes, p)
+		} else {
+			nonmaxes = append(nonmaxes, p)
 		}
 	}
-	return maxes
+	return
+}
+
+func (g *Game) IsDay() bool {
+	return g.Phase%2 == 0
+}
+
+func (g *Game) IsNight() bool {
+	return !g.IsDay()
 }

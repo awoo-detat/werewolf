@@ -46,7 +46,7 @@ func (suite *AuxSeerTestSuite) TestActions() {
 
 // TestKill ensures that when you kill an aux seer, they stay down.
 func (suite *AuxSeerTestSuite) TestKill() {
-	assert.False(suite.T(), suite.auxseer.Kill())
+	assert.True(suite.T(), suite.auxseer.Kill())
 }
 
 func TestAuxSeerTestSuite(t *testing.T) {

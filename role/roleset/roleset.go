@@ -10,6 +10,10 @@ type Roleset struct {
 	Roles       []*role.Role `json:"roles"`
 }
 
+func (rs *Roleset) String() string {
+	return rs.Name
+}
+
 func List() map[string]*Roleset {
 	return sets
 }

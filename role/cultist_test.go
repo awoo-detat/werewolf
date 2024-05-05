@@ -47,7 +47,7 @@ func (suite *CultistTestSuite) TestActions() {
 
 // TestKill ensures that when you kill a seer, they stay down.
 func (suite *CultistTestSuite) TestKill() {
-	assert.False(suite.T(), suite.cultist.Kill())
+	assert.True(suite.T(), suite.cultist.Kill())
 }
 
 func TestCultistTestSuite(t *testing.T) {

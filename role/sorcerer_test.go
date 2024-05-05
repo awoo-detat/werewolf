@@ -47,7 +47,7 @@ func (suite *SorcererTestSuite) TestActions() {
 
 // TestKill ensures that when you kill a sorcerer, they stay down.
 func (suite *SorcererTestSuite) TestKill() {
-	assert.False(suite.T(), suite.sorcerer.Kill())
+	assert.True(suite.T(), suite.sorcerer.Kill())
 }
 
 func TestSorcererTestSuite(t *testing.T) {

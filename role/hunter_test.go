@@ -43,7 +43,7 @@ func (suite *HunterTestSuite) TestActions() {
 
 // TestKill ensures that when you kill a hunter, they stay down.
 func (suite *HunterTestSuite) TestKill() {
-	assert.False(suite.T(), suite.hunter.Kill())
+	assert.True(suite.T(), suite.hunter.Kill())
 }
 
 func TestHunterTestSuite(t *testing.T) {

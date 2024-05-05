@@ -1,9 +1,11 @@
 package role
 
+type PlayerType int
+
 const (
-	Good    = iota
-	Evil    = iota
-	Neutral = iota
+	Good    PlayerType = iota
+	Evil               = iota
+	Neutral            = iota
 )
 
 type Attribute int
@@ -27,15 +29,19 @@ const (
 )
 
 type Role struct {
-	Name           string    `json:"name"`
-	Description    string    `json:"description"`
-	Team           int       `json:"team"`
-	Parity         int       `json:"-"`
-	VoteMultiplier int       `json:"-"`
-	Health         int       `json:"-"`
-	Alive          bool      `json:"alive"`
-	Actions        Action    `json:"night_action"`
-	Attributes     Attribute `json:"-"`
+	Name           string     `json:"name"`
+	Description    string     `json:"description"`
+	Team           PlayerType `json:"team"`
+	Parity         int        `json:"-"`
+	VoteMultiplier int        `json:"-"`
+	Health         int        `json:"-"`
+	Alive          bool       `json:"alive"`
+	Actions        Action     `json:"night_action"`
+	Attributes     Attribute  `json:"-"`
+}
+
+func (r *Role) String() string {
+	return r.Name
 }
 
 // IsMaxEvil returns whether or not a player is a max evil (ie a Werewolf). Another player viewing for max evil should use ViewForMaxEvil().
@@ -110,11 +116,12 @@ func (r *Role) SetTinker() {
 
 // Kill attempts to kill the player. If they had more than 1 health (ie
 // were "tough") then they will remain alive.
+// It returns whether or not the kill was successful.
 func (r *Role) Kill() bool {
 	// maybe this should error if you try to kill a dead person?
 	r.Health--
 	if r.Health <= 0 {
 		r.Alive = false
 	}
-	return r.Alive
+	return !r.Alive
 }

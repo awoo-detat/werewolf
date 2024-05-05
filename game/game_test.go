@@ -87,7 +87,7 @@ func TestGameCannotHaveStartedWhenChoosingRoleset(t *testing.T) {
 	g.AddPlayer(p5)
 	err := g.ChooseRoleset("Vanilla Fiver")
 	assert.Nil(err)
-	err = g.StartGame()
+	err = g.Start()
 	assert.Nil(err)
 
 	err = g.ChooseRoleset("Fast Fiver")
@@ -110,10 +110,10 @@ func TestCannotStartWhenNotInSetup(t *testing.T) {
 	g.AddPlayer(p5)
 	err := g.ChooseRoleset("Vanilla Fiver")
 	assert.Nil(err)
-	err = g.StartGame()
+	err = g.Start()
 	assert.Nil(err)
 
-	err = g.StartGame()
+	err = g.Start()
 
 	assert.Error(err)
 }
@@ -122,7 +122,7 @@ func TestCannotStartGameWithoutRoleset(t *testing.T) {
 	l := player.NewPlayer()
 	g := NewGame(l)
 
-	err := g.StartGame()
+	err := g.Start()
 
 	assert.Error(t, err)
 }
@@ -134,7 +134,7 @@ func TestCannotStartGameWithMismatchedPlayerCountAndRoleset(t *testing.T) {
 	err := g.ChooseRoleset("Vanilla Fiver")
 	assert.Nil(err)
 
-	err = g.StartGame()
+	err = g.Start()
 
 	assert.Error(err) // TODO match on the error?
 }
@@ -164,7 +164,7 @@ func TestRolesAreAssignedAtGameStart(t *testing.T) {
 	assert.Nil(p4.Role)
 	assert.Nil(p5.Role)
 
-	err = g.StartGame()
+	err = g.Start()
 	assert.Nil(err)
 	assert.Equal(Running, g.State())
 
@@ -183,16 +183,19 @@ func TestGame(t *testing.T) {
 	g := NewGame(player.NewPlayer())
 	assert.Equal(Setup, g.State())
 
-	for i := 0; i < 10; i++ {
-		g.AddPlayer(player.NewPlayer())
-	}
+	t.Run("Choose roleset and signup", func(t *testing.T) {
 
-	err := g.ChooseRoleset("Imperfect Eleven")
-	assert.Nil(err)
+		for i := 0; i < 10; i++ {
+			g.AddPlayer(player.NewPlayer())
+		}
 
-	err = g.StartGame()
-	assert.Nil(err)
-	assert.Equal(Running, g.State())
+		err := g.ChooseRoleset("Imperfect Eleven")
+		assert.Nil(err)
+
+		err = g.Start()
+		assert.Nil(err)
+		assert.Equal(Running, g.State())
+	})
 
 	var wolf1, wolf2, sorcerer, hunter, seer, v1, v2, v3, v4, v5, v6 *player.Player
 
@@ -227,49 +230,110 @@ func TestGame(t *testing.T) {
 		}
 	}
 
-	// wolf 1 knows wolf 2
-	assert.Len(wolf1.Views, 1)
-	assert.Contains(wolf1.Views, &player.View{
-		Player:    wolf2,
-		Attribute: role.MaxEvilAttribute,
-		Hit:       true,
-		GamePhase: 0,
+	t.Run("N0", func(t *testing.T) {
+		// wolf 1 knows wolf 2
+		assert.Len(wolf1.Views, 1)
+		assert.Contains(wolf1.Views, &player.View{
+			Player:    wolf2,
+			Attribute: role.MaxEvilAttribute,
+			Hit:       true,
+			GamePhase: 0,
+		})
+
+		// wolf 2 knows wolf 1
+		assert.Len(wolf2.Views, 1)
+		assert.Contains(wolf2.Views, &player.View{
+			Player:    wolf1,
+			Attribute: role.MaxEvilAttribute,
+			Hit:       true,
+			GamePhase: 0,
+		})
+
+		// sorc has a random clear, does NOT know the wolves
+		assert.Len(sorcerer.Views, 1)
+		sorcClear := sorcerer.Views[0]
+		assert.Equal(role.SeerAttribute, sorcClear.Attribute)
+		assert.False(sorcClear.Hit)
+		assert.NotEqual(sorcClear.Player, seer)
+		assert.Equal(0, sorcClear.GamePhase)
+
+		// hunter knows nothing
+		assert.Empty(hunter.Views)
+
+		// seer has a random clear
+		assert.Len(seer.Views, 1)
+		seerClear := seer.Views[0]
+		assert.Equal(role.MaxEvilAttribute, seerClear.Attribute)
+		assert.False(seerClear.Hit)
+		assert.NotEqual(seerClear.Player, wolf1)
+		assert.NotEqual(seerClear.Player, wolf2)
+		assert.Equal(0, seerClear.GamePhase)
+
+		// villagers know nothing
+		assert.Empty(v1.Views)
+		assert.Empty(v2.Views)
+		assert.Empty(v3.Views)
+		assert.Empty(v4.Views)
+		assert.Empty(v5.Views)
+		assert.Empty(v6.Views)
+
+		assert.Equal(0, g.Phase)
+		assert.Equal(Running, g.State())
+		assert.True(g.IsDay())
+		assert.False(g.IsNight())
 	})
 
-	// wolf 2 knows wolf 1
-	assert.Len(wolf2.Views, 1)
-	assert.Contains(wolf2.Views, &player.View{
-		Player:    wolf1,
-		Attribute: role.MaxEvilAttribute,
-		Hit:       true,
-		GamePhase: 0,
+	t.Run("D1, villager dies", func(t *testing.T) {
+		assert.Equal(2, len(g.AliveMaxEvils()))
+		assert.True(g.IsDay())
+		assert.Equal(0, g.Phase)
+
+		assert.Nil(g.Vote(wolf1, v1)) // 1/6 needed
+		assert.Nil(g.Vote(wolf2, v2))
+		assert.Nil(g.Vote(sorcerer, v1)) // 2/6
+		assert.Nil(g.Vote(hunter, seer))
+		assert.Nil(g.Vote(seer, v3))
+		assert.Nil(g.Vote(v1, wolf1))
+		assert.Nil(g.Vote(v2, v1)) // 3/6
+		assert.Nil(g.Vote(v3, hunter))
+		assert.Nil(g.Vote(v4, v5))
+		assert.Nil(g.Vote(v5, v1)) // 4/6
+		assert.Nil(g.Vote(v6, v5))
+
+		assert.True(g.IsDay())
+		assert.Equal(0, g.Phase)
+
+		assert.Nil(g.Vote(seer, v1)) // 5/6
+		assert.True(g.IsDay())
+		assert.Equal(0, g.Phase)
+
+		assert.Nil(g.Vote(hunter, v1)) // 6/6
+		assert.True(g.IsNight())
+		assert.Equal(1, g.Phase)
 	})
 
-	// sorc has a random clear, does NOT know the wolves
-	assert.Len(sorcerer.Views, 1)
-	sorcClear := sorcerer.Views[0]
-	assert.Equal(role.SeerAttribute, sorcClear.Attribute)
-	assert.False(sorcClear.Hit)
-	assert.NotEqual(sorcClear.Player, seer)
-	assert.Equal(0, sorcClear.GamePhase)
+	t.Run("N1, villager eaten", func(t *testing.T) {
+		// can't vote at night
+	})
 
-	// hunter knows nothing
-	assert.Empty(hunter.Views)
+	t.Run("D2, villager dies", func(t *testing.T) {
+	})
 
-	// seer has a random clear
-	assert.Len(seer.Views, 1)
-	seerClear := seer.Views[0]
-	assert.Equal(role.MaxEvilAttribute, seerClear.Attribute)
-	assert.False(seerClear.Hit)
-	assert.NotEqual(seerClear.Player, wolf1)
-	assert.NotEqual(seerClear.Player, wolf2)
-	assert.Equal(0, seerClear.GamePhase)
+	t.Run("N2, double hits, villager dies", func(t *testing.T) {
+	})
 
-	// villagers know nothing
-	assert.Empty(v1.Views)
-	assert.Empty(v2.Views)
-	assert.Empty(v3.Views)
-	assert.Empty(v4.Views)
-	assert.Empty(v5.Views)
-	assert.Empty(v6.Views)
+	t.Run("D3, wolf dies", func(t *testing.T) {
+	})
+
+	t.Run("N3, seer dies", func(t *testing.T) {
+	})
+
+	t.Run("D4, sorc dies", func(t *testing.T) {
+	})
+
+	t.Run("N4, villager dies", func(t *testing.T) {
+	})
+
+	t.Run("D5, villager dies, good wins", func(t *testing.T) {
+	})
 }
