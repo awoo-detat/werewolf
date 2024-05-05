@@ -126,12 +126,7 @@ func (g *Game) processN0() {
 		if p.Role.KnowsMaxes() {
 			for _, m := range g.AliveMaxEvils() {
 				if m != p {
-					p.Views = append(p.Views, &player.View{
-						Player:    m,
-						Attribute: role.MaxEvilAttribute,
-						Hit:       true,
-						GamePhase: g.Phase,
-					})
+					p.AddView(player.NewAttributeView(m, role.MaxEvilAttribute, true, g.Phase))
 				}
 			}
 		}
@@ -335,32 +330,21 @@ func (g *Game) alivePlayersWithNightActions() []*player.Player {
 func (g *Game) processNightActions() {
 	var nk *player.Player
 	for _, fp := range g.nightActions {
+		var view *player.View
 		switch {
 		case fp.From.Role.CanViewForMax():
-			fp.From.Views = append(fp.From.Views, &player.View{
-				Player:    fp.To,
-				Attribute: role.MaxEvilAttribute,
-				Hit:       fp.To.Role.ViewForMaxEvil(),
-				GamePhase: g.Phase,
-			})
+			view = player.NewAttributeView(fp.To, role.MaxEvilAttribute, fp.To.Role.ViewForMaxEvil(), g.Phase)
 		case fp.From.Role.CanNightKill():
 			nk = fp.To
 		case fp.From.Role.CanViewForSeer():
-			fp.From.Views = append(fp.From.Views, &player.View{
-				Player:    fp.To,
-				Attribute: role.SeerAttribute,
-				Hit:       fp.To.Role.ViewForSeer(),
-				GamePhase: g.Phase,
-			})
+			view = player.NewAttributeView(fp.To, role.SeerAttribute, fp.To.Role.ViewForSeer(), g.Phase)
 		case fp.From.Role.CanViewForAux():
-			fp.From.Views = append(fp.From.Views, &player.View{
-				Player:    fp.To,
-				Attribute: role.AuxEvilAttribute,
-				Hit:       fp.To.Role.ViewForAuxEvil(),
-				GamePhase: g.Phase,
-			})
+			view = player.NewAttributeView(fp.To, role.AuxEvilAttribute, fp.To.Role.ViewForAuxEvil(), g.Phase)
 		default:
 			// TODO keep track of "most suspicious" (#4)
+		}
+		if view != nil {
+			fp.From.AddView(view)
 		}
 	}
 
@@ -374,5 +358,13 @@ func (g *Game) processNightActions() {
 }
 
 func (g *Game) RevealPlayer(p *player.Player) {
-	// TODO #5
+	g.Broadcast(player.NewRoleView(p, p.Role, g.Phase))
+}
+
+// Broadcast sends a view to every player, alive and dead. It
+// is primarily used for revealing the roles of dead players.
+func (g *Game) Broadcast(v *player.View) {
+	for _, p := range g.Players {
+		p.AddView(v)
+	}
 }

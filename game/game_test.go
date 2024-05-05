@@ -325,6 +325,14 @@ func TestGame(t *testing.T) {
 		assert.True(g.IsNight())
 		assert.Equal(2, g.Phase)
 		assert.False(v1.Role.Alive)
+
+		for _, p := range g.Players {
+			v := p.Views[len(p.Views)-1]
+			assert.Equal(v1, v.Player)
+			assert.Equal(v1.Role, v.Role)
+			assert.True(v.Hit)
+			assert.Equal(g.Phase-1, v.GamePhase)
+		}
 	})
 
 	t.Run("N1, villager eaten", func(t *testing.T) {
@@ -347,29 +355,36 @@ func TestGame(t *testing.T) {
 		assert.Equal(3, g.Phase)
 
 		assert.False(v3.Role.Alive)
+		for _, p := range g.Players {
+			v := p.Views[len(p.Views)-1]
+			assert.Equal(v3, v.Player)
+			assert.Equal(v3.Role, v.Role)
+			assert.True(v.Hit)
+			assert.Equal(g.Phase-1, v.GamePhase)
+		}
 
 		// no new views
-		assert.Len(wolf1.Views, 1)
-		assert.Len(wolf2.Views, 1)
-		assert.Empty(hunter.Views)
-		assert.Empty(v1.Views)
-		assert.Empty(v2.Views)
-		assert.Empty(v3.Views)
-		assert.Empty(v4.Views)
-		assert.Empty(v5.Views)
-		assert.Empty(v6.Views)
+		assert.Len(wolf1.Views, 3)
+		assert.Len(wolf2.Views, 3)
+		assert.Len(hunter.Views, 2)
+		assert.Len(v1.Views, 2)
+		assert.Len(v2.Views, 2)
+		assert.Len(v3.Views, 2)
+		assert.Len(v4.Views, 2)
+		assert.Len(v5.Views, 2)
+		assert.Len(v6.Views, 2)
 
 		// sorc has a new view
-		assert.Len(sorcerer.Views, 2)
-		sorcView := sorcerer.Views[1]
+		assert.Len(sorcerer.Views, 4)
+		sorcView := sorcerer.Views[2]
 		assert.Equal(role.SeerAttribute, sorcView.Attribute)
 		assert.Equal(hunter, sorcView.Player)
 		assert.False(sorcView.Hit)
 		assert.Equal(2, sorcView.GamePhase)
 
 		// seer has a new view
-		assert.Len(seer.Views, 2)
-		seerView := seer.Views[1]
+		assert.Len(seer.Views, 4)
+		seerView := seer.Views[2]
 		assert.Equal(role.MaxEvilAttribute, seerView.Attribute)
 		assert.Equal(v2, seerView.Player)
 		assert.False(seerView.Hit)
@@ -403,6 +418,13 @@ func TestGame(t *testing.T) {
 		assert.True(g.IsNight())
 		assert.Equal(4, g.Phase)
 		assert.False(v2.Role.Alive)
+		for _, p := range g.Players {
+			v := p.Views[len(p.Views)-1]
+			assert.Equal(v2, v.Player)
+			assert.Equal(v2.Role, v.Role)
+			assert.True(v.Hit)
+			assert.Equal(g.Phase-1, v.GamePhase)
+		}
 	})
 
 	t.Run("N2, double hits, villager dies", func(t *testing.T) {
@@ -415,29 +437,36 @@ func TestGame(t *testing.T) {
 		assert.Equal(5, g.Phase)
 
 		assert.False(v4.Role.Alive)
+		for _, p := range g.Players {
+			v := p.Views[len(p.Views)-1]
+			assert.Equal(v4, v.Player)
+			assert.Equal(v4.Role, v.Role)
+			assert.True(v.Hit)
+			assert.Equal(g.Phase-1, v.GamePhase)
+		}
 
 		// no new views
-		assert.Len(wolf1.Views, 1)
-		assert.Len(wolf2.Views, 1)
-		assert.Empty(hunter.Views)
-		assert.Empty(v1.Views)
-		assert.Empty(v2.Views)
-		assert.Empty(v3.Views)
-		assert.Empty(v4.Views)
-		assert.Empty(v5.Views)
-		assert.Empty(v6.Views)
+		assert.Len(wolf1.Views, 5)
+		assert.Len(wolf2.Views, 5)
+		assert.Len(hunter.Views, 4)
+		assert.Len(v1.Views, 4)
+		assert.Len(v2.Views, 4)
+		assert.Len(v3.Views, 4)
+		assert.Len(v4.Views, 4)
+		assert.Len(v5.Views, 4)
+		assert.Len(v6.Views, 4)
 
 		// sorc has a new view
-		assert.Len(sorcerer.Views, 3)
-		sorcView := sorcerer.Views[2]
+		assert.Len(sorcerer.Views, 7)
+		sorcView := sorcerer.Views[5]
 		assert.Equal(role.SeerAttribute, sorcView.Attribute)
 		assert.Equal(seer, sorcView.Player)
 		assert.True(sorcView.Hit)
 		assert.Equal(4, sorcView.GamePhase)
 
 		// seer has a new view
-		assert.Len(seer.Views, 3)
-		seerView := seer.Views[2]
+		assert.Len(seer.Views, 7)
+		seerView := seer.Views[5]
 		assert.Equal(role.MaxEvilAttribute, seerView.Attribute)
 		assert.Equal(wolf1, seerView.Player)
 		assert.True(seerView.Hit)
@@ -466,6 +495,13 @@ func TestGame(t *testing.T) {
 		assert.True(g.IsNight())
 		assert.Equal(6, g.Phase)
 		assert.False(wolf1.Role.Alive)
+		for _, p := range g.Players {
+			v := p.Views[len(p.Views)-1]
+			assert.Equal(wolf1, v.Player)
+			assert.Equal(wolf1.Role, v.Role)
+			assert.True(v.Hit)
+			assert.Equal(g.Phase-1, v.GamePhase)
+		}
 	})
 
 	t.Run("N3, seer dies", func(t *testing.T) {
@@ -478,29 +514,36 @@ func TestGame(t *testing.T) {
 		assert.Equal(7, g.Phase)
 
 		assert.False(seer.Role.Alive)
+		for _, p := range g.Players {
+			v := p.Views[len(p.Views)-1]
+			assert.Equal(seer, v.Player)
+			assert.Equal(seer.Role, v.Role)
+			assert.True(v.Hit)
+			assert.Equal(g.Phase-1, v.GamePhase)
+		}
 
 		// no new views
-		assert.Len(wolf1.Views, 1)
-		assert.Len(wolf2.Views, 1)
-		assert.Empty(hunter.Views)
-		assert.Empty(v1.Views)
-		assert.Empty(v2.Views)
-		assert.Empty(v3.Views)
-		assert.Empty(v4.Views)
-		assert.Empty(v5.Views)
-		assert.Empty(v6.Views)
+		assert.Len(wolf1.Views, 7)
+		assert.Len(wolf2.Views, 7)
+		assert.Len(hunter.Views, 6)
+		assert.Len(v1.Views, 6)
+		assert.Len(v2.Views, 6)
+		assert.Len(v3.Views, 6)
+		assert.Len(v4.Views, 6)
+		assert.Len(v5.Views, 6)
+		assert.Len(v6.Views, 6)
 
 		// sorc has a new view
-		assert.Len(sorcerer.Views, 4)
-		sorcView := sorcerer.Views[3]
+		assert.Len(sorcerer.Views, 10)
+		sorcView := sorcerer.Views[8]
 		assert.Equal(role.SeerAttribute, sorcView.Attribute)
 		assert.Equal(seer, sorcView.Player)
 		assert.True(sorcView.Hit)
 		assert.Equal(6, sorcView.GamePhase)
 
 		// seer has a new view, even though they're dead
-		assert.Len(seer.Views, 4)
-		seerView := seer.Views[3]
+		assert.Len(seer.Views, 10)
+		seerView := seer.Views[8]
 		assert.Equal(role.MaxEvilAttribute, seerView.Attribute)
 		assert.Equal(sorcerer, seerView.Player)
 		assert.False(seerView.Hit)
@@ -527,6 +570,13 @@ func TestGame(t *testing.T) {
 		assert.True(g.IsNight())
 		assert.Equal(8, g.Phase)
 		assert.False(sorcerer.Role.Alive)
+		for _, p := range g.Players {
+			v := p.Views[len(p.Views)-1]
+			assert.Equal(sorcerer, v.Player)
+			assert.Equal(sorcerer.Role, v.Role)
+			assert.True(v.Hit)
+			assert.Equal(g.Phase-1, v.GamePhase)
+		}
 	})
 
 	t.Run("N4, villager dies", func(t *testing.T) {
@@ -536,19 +586,26 @@ func TestGame(t *testing.T) {
 		assert.Equal(9, g.Phase)
 
 		assert.False(v5.Role.Alive)
+		for _, p := range g.Players {
+			v := p.Views[len(p.Views)-1]
+			assert.Equal(v5, v.Player)
+			assert.Equal(v5.Role, v.Role)
+			assert.True(v.Hit)
+			assert.Equal(g.Phase-1, v.GamePhase)
+		}
 
 		// no new views
-		assert.Len(wolf1.Views, 1)
-		assert.Len(wolf2.Views, 1)
-		assert.Empty(hunter.Views)
-		assert.Empty(v1.Views)
-		assert.Empty(v2.Views)
-		assert.Empty(v3.Views)
-		assert.Empty(v4.Views)
-		assert.Empty(v5.Views)
-		assert.Empty(v6.Views)
-		assert.Len(sorcerer.Views, 4)
-		assert.Len(seer.Views, 4)
+		assert.Len(wolf1.Views, 9)
+		assert.Len(wolf2.Views, 9)
+		assert.Len(hunter.Views, 8)
+		assert.Len(v1.Views, 8)
+		assert.Len(v2.Views, 8)
+		assert.Len(v3.Views, 8)
+		assert.Len(v4.Views, 8)
+		assert.Len(v5.Views, 8)
+		assert.Len(v6.Views, 8)
+		assert.Len(sorcerer.Views, 12)
+		assert.Len(seer.Views, 12)
 
 	})
 
@@ -567,6 +624,13 @@ func TestGame(t *testing.T) {
 		assert.Nil(g.Vote(&player.FingerPoint{From: hunter, To: v6})) // 2/2
 
 		assert.False(v6.Role.Alive)
+		for _, p := range g.Players {
+			v := p.Views[len(p.Views)-1]
+			assert.Equal(v6, v.Player)
+			assert.Equal(v6.Role, v.Role)
+			assert.True(v.Hit)
+			assert.Equal(g.Phase, v.GamePhase)
+		}
 		assert.True(wolf2.Role.Alive)
 		assert.Len(g.AliveMaxEvils(), 1, "didn't need to kill all wolves")
 		assert.Equal(Finished, g.State())

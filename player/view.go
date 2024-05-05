@@ -14,6 +14,32 @@ import (
 type View struct {
 	Player    *Player
 	Attribute role.Attribute
+	Role      *role.Role
 	Hit       bool
 	GamePhase int
+}
+
+func NewAttributeView(p *Player, a role.Attribute, hit bool, phase int) *View {
+	return &View{
+		Player:    p,
+		Attribute: a,
+		Hit:       hit,
+		GamePhase: phase,
+	}
+}
+
+func NewRoleView(p *Player, r *role.Role, phase int) *View {
+	return &View{
+		Player:    p,
+		Role:      r,
+		Hit:       true, // by definition you get the real role
+		GamePhase: phase,
+	}
+}
+
+func (v *View) For() string {
+	if v.Role != nil {
+		return v.Role.Name
+	}
+	return v.Attribute.String()
 }
