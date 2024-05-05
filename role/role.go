@@ -1,5 +1,9 @@
 package role
 
+import (
+	"log/slog"
+)
+
 type PlayerType int
 
 const (
@@ -66,6 +70,7 @@ func (r *Role) IsMaxEvil() bool {
 // ViewForMaxEvil allows Seers to view if a role is max evil. It differs from IsMaxEvil because the Tinker can invert the result.
 func (r *Role) ViewForMaxEvil() bool {
 	if r.Attributes&TinkerAttribute > 0 {
+		slog.Info("viewing as tinker", "attribute", MaxEvilAttribute)
 		return !r.IsMaxEvil()
 	}
 	return r.IsMaxEvil()
@@ -80,6 +85,7 @@ func (r *Role) IsAuxEvil() bool {
 // can invert the result.
 func (r *Role) ViewForAuxEvil() bool {
 	if r.Attributes&TinkerAttribute > 0 {
+		slog.Info("viewing as tinker", "attribute", AuxEvilAttribute)
 		return !r.IsAuxEvil()
 	}
 	return r.IsAuxEvil()
@@ -94,6 +100,7 @@ func (r *Role) IsSeer() bool {
 // tinker can invert the result.
 func (r *Role) ViewForSeer() bool {
 	if r.Attributes&TinkerAttribute > 0 {
+		slog.Info("viewing as tinker", "attribute", SeerAttribute)
 		return !r.IsSeer()
 	}
 	return r.IsSeer()
@@ -136,6 +143,9 @@ func (r *Role) Kill() bool {
 	r.Health--
 	if r.Health <= 0 {
 		r.Alive = false
+	} else {
+		slog.Info("not killed", "role", r, "health", r.Health)
 	}
+
 	return !r.Alive
 }

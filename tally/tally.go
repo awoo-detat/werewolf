@@ -1,6 +1,7 @@
 package tally
 
 import (
+	"log/slog"
 	"sort"
 
 	"github.com/awoo-detat/werewolf/player"
@@ -39,6 +40,7 @@ func New(players []*player.Player) *Tally {
 }
 
 func (t *Tally) Vote(fp *player.FingerPoint) {
+	slog.Info("vote received", "fingerpoint", fp)
 	// if they've voted for anyone before, remove it from the tally
 	if current := t.Inverted[fp.From]; current != nil {
 		t.voteMap[current.Candidate].RemoveVote(current)
@@ -55,6 +57,7 @@ func (t *Tally) Vote(fp *player.FingerPoint) {
 }
 
 func (t *Tally) Unvote(from *player.Player) {
+	slog.Info("unvote received", "player", from)
 	v := t.Inverted[from]
 	if v == nil {
 		return

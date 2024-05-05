@@ -99,6 +99,7 @@ func (g *Game) assignRoles() error {
 		p := g.playerSlice[playerKey]
 		r := g.Roleset.Roles[roleKey]
 		p.SetRole(r)
+		slog.Info("assigning role", "player", p, "role", r)
 	}
 
 	return nil
@@ -141,6 +142,7 @@ func (g *Game) randomClear(p *player.Player, test func(*role.Role) bool) *player
 			continue
 		}
 		if !test(view.Role) {
+			slog.Info("random clear obtained", "for", p, "clear", view)
 			return view
 		}
 	}
@@ -151,6 +153,7 @@ func (g *Game) Start() error {
 	if g.state > Setup {
 		return &StateError{NeedState: Setup, InState: g.state}
 	}
+	slog.Info("starting game")
 
 	// fill in the slice of players now that we have them all
 	for _, p := range g.Players {
@@ -170,6 +173,7 @@ func (g *Game) Start() error {
 
 func (g *Game) nextPhase() {
 	g.Phase++
+	slog.Info("new phase", "phase", g.Phase)
 	// new day new me, reset everything
 	if g.IsDay() {
 		g.Tally = tally.New(g.playerSlice)
@@ -223,6 +227,7 @@ func (g *Game) checkForInstaKillDayEnd() {
 }
 
 func (g *Game) KillPlayer(p *player.Player) {
+	slog.Info("killing player", "player", p)
 	killed := p.Role.Kill()
 	if !killed {
 		return
@@ -233,6 +238,7 @@ func (g *Game) KillPlayer(p *player.Player) {
 	maxes, nonmaxes := g.AlivePlayersByType()
 	parity := g.Parity()
 	equality := len(maxes) == len(nonmaxes)
+	slog.Info("checking for game end", "parity", parity, "equality", equality)
 	switch {
 	case len(maxes) == 0:
 		g.EndGame(role.Good)
@@ -294,6 +300,8 @@ func (g *Game) SetNightAction(fp *player.FingerPoint) error {
 		return fmt.Errorf("%s is dead and cannot be targeted by a night action", fp.To)
 	}
 
+	slog.Info("setting night action", "fingerpoint", fp)
+
 	// this allows you to change your mind and choose someone else
 	g.nightActions[fp.From] = fp
 	neededPlayers := g.alivePlayersWithNightActions()
@@ -328,6 +336,7 @@ func (g *Game) alivePlayersWithNightActions() []*player.Player {
 
 // this assumes you will only ever have one night action...
 func (g *Game) processNightActions() {
+	slog.Info("processing night actions", "phase", g.Phase)
 	var nk *player.Player
 	for _, fp := range g.nightActions {
 		var view *player.View
@@ -358,6 +367,7 @@ func (g *Game) processNightActions() {
 }
 
 func (g *Game) RevealPlayer(p *player.Player) {
+	slog.Info("revealing player", "player", p, "role", p.Role)
 	g.Broadcast(player.NewRoleView(p, p.Role, g.Phase))
 }
 
