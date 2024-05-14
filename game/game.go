@@ -8,6 +8,7 @@ import (
 	"slices"
 
 	"github.com/awoo-detat/werewolf/gamechannel"
+	"github.com/awoo-detat/werewolf/gamechannel/server"
 	"github.com/awoo-detat/werewolf/player"
 	"github.com/awoo-detat/werewolf/role"
 	"github.com/awoo-detat/werewolf/role/roleset"
@@ -74,6 +75,8 @@ func (g *Game) State() GameState {
 func (g *Game) AddPlayer(p *player.Player) {
 	g.Players[p.ID] = p
 	slog.Info("player added", "player", p)
+	g.Broadcast(server.PlayerJoin, p)
+	g.Broadcast(server.AlivePlayerList, g.playerSlice)
 }
 
 func (g *Game) ChooseRoleset(slug string) error {
@@ -87,6 +90,7 @@ func (g *Game) ChooseRoleset(slug string) error {
 
 	g.Roleset = rs
 	slog.Info("roleset chosen", "roleset", rs)
+	g.Broadcast(server.RolesetSelected, rs)
 	return nil
 }
 
@@ -371,13 +375,19 @@ func (g *Game) processNightActions() {
 
 func (g *Game) RevealPlayer(p *player.Player) {
 	slog.Info("revealing player", "player", p, "role", p.Role)
-	g.Broadcast(player.NewRoleView(p, p.Role, g.Phase))
+	g.BroadcastView(player.NewRoleView(p, p.Role, g.Phase))
 }
 
-// Broadcast sends a view to every player, alive and dead. It
+// BroadcastView sends a view to every player, alive and dead. It
 // is primarily used for revealing the roles of dead players.
-func (g *Game) Broadcast(v *player.View) {
+func (g *Game) BroadcastView(v *player.View) {
 	for _, p := range g.Players {
 		p.AddView(v)
+	}
+}
+
+func (g *Game) Broadcast(t server.MessageType, payload interface{}) {
+	for _, p := range g.Players {
+		p.Message(t, payload)
 	}
 }

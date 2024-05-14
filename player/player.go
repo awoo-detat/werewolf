@@ -13,10 +13,10 @@ import (
 )
 
 type Player struct {
-	ID          uuid.UUID
-	Name        string
-	Role        *role.Role
-	Views       []*View
+	ID          uuid.UUID  `json:"id"`
+	Name        string     `json:"name"`
+	Role        *role.Role `json:"-"`
+	Views       []*View    `json:"-"`
 	socket      Communicator
 	gameChannel gamechannel.GameChannel
 }
@@ -83,13 +83,18 @@ func (p *Player) Play() {
 			break
 		}
 
-		m := client.Decode(c)
+		m, err := client.Decode(c)
+		if err != nil {
+			continue
+		}
 
 		switch m.Type {
 		case client.Awoo:
 			p.Message(server.Awoo, "awooooooooo")
 		case client.SetName:
 			p.SetName(m.PlayerName)
+		case client.SetRoleset:
+			slog.Warn("brb", "roleset", m.Roleset)
 		default:
 			slog.Warn("unknown message ", "message", m)
 		}
