@@ -62,6 +62,12 @@ func (p *Player) Message(t server.MessageType, payload interface{}) error {
 	return p.socket.WriteMessage(1, m)
 }
 
+func (p *Player) Reconnect(c Communicator) {
+	slog.Info("player reconnecting", "player", p)
+	p.socket = c
+	go p.Play()
+}
+
 func (p *Player) Play() {
 	defer p.socket.Close()
 
