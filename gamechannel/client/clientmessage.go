@@ -11,6 +11,7 @@ const (
 	Awoo       MessageType = "awoo"
 	SetName    MessageType = "setName"
 	SetRoleset MessageType = "setRoleset"
+	Quit       MessageType = "quit"
 )
 
 type Message struct {

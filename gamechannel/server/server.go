@@ -12,7 +12,6 @@ const (
 	PlayerJoin                  = "playerJoin"
 	PlayerLeave                 = "playerLeave"
 	AlivePlayerList             = "alivePlayerList"
-	PlayerRename                = "playerRename"
 	RolesetList                 = "rolesetList"
 	RolesetSelected             = "rolesetSelected"
 )

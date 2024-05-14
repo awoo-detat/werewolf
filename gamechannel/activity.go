@@ -7,8 +7,7 @@ import (
 type ActivityType int
 
 const (
-	Join ActivityType = iota
-	SetName
+	SetName ActivityType = iota
 	SetRoleset
 	Vote
 	Quit
@@ -16,7 +15,8 @@ const (
 )
 
 type Activity struct {
-	Type   ActivityType
-	Player uuid.UUID
-	Value  interface{}
+	Type  ActivityType
+	From  uuid.UUID
+	To    uuid.UUID
+	Value interface{}
 }

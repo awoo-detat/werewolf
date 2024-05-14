@@ -55,7 +55,6 @@ const (
 func NewGame(p *player.Player) *Game {
 	g := &Game{
 		ID:           uuid.New(),
-		Leader:       p,
 		Players:      make(map[uuid.UUID]*player.Player),
 		VotingMethod: InstaKill,
 		AlivePlayers: make(map[uuid.UUID]*player.Player),
@@ -64,9 +63,15 @@ func NewGame(p *player.Player) *Game {
 		gameChannel:  make(gamechannel.GameChannel),
 	}
 	g.AddPlayer(p)
-	p.Message(server.RolesetList, roleset.List())
+	g.SetLeader(p)
 
+	go g.ListenToGameChannel()
 	return g
+}
+
+func (g *Game) SetLeader(p *player.Player) {
+	g.Leader = p
+	p.Message(server.RolesetList, roleset.List())
 }
 
 func (g *Game) State() GameState {
@@ -74,10 +79,11 @@ func (g *Game) State() GameState {
 }
 
 func (g *Game) AddPlayer(p *player.Player) {
+	p.SetGameChannel(g.gameChannel)
 	g.Players[p.ID] = p
 	slog.Info("player added", "player", p)
 	g.Broadcast(server.PlayerJoin, p)
-	g.Broadcast(server.AlivePlayerList, g.Players)
+	g.BroadcastPlayerList()
 }
 
 func (g *Game) ChooseRoleset(slug string) error {
@@ -390,5 +396,32 @@ func (g *Game) BroadcastView(v *player.View) {
 func (g *Game) Broadcast(t server.MessageType, payload interface{}) {
 	for _, p := range g.Players {
 		p.Message(t, payload)
+	}
+}
+
+func (g *Game) BroadcastPlayerList() {
+	var list []*player.Player
+	for _, p := range g.Players {
+		list = append(list, p)
+	}
+	g.Broadcast(server.AlivePlayerList, list)
+}
+
+func (g *Game) ListenToGameChannel() {
+	for {
+		slog.Info("waiting for message on game channel...")
+		activity := <-g.gameChannel
+
+		switch activity.Type {
+		case gamechannel.SetName:
+			g.BroadcastPlayerList()
+		case gamechannel.SetRoleset:
+		case gamechannel.Vote:
+		case gamechannel.Quit:
+			p := g.Players[activity.From]
+			delete(g.Players, activity.From)
+			g.Broadcast(server.PlayerLeave, p)
+			g.BroadcastPlayerList()
+		}
 	}
 }

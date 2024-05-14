@@ -48,6 +48,10 @@ func (p *Player) SetRole(r *role.Role) {
 	slog.Info("setting player role", "player", p, "role", r)
 }
 
+func (p *Player) SetGameChannel(gc gamechannel.GameChannel) {
+	p.gameChannel = gc
+}
+
 func (p *Player) AddView(v *View) {
 	p.Views = append(p.Views, v)
 	slog.Info("adding view", "view", v, "player", p)
@@ -94,8 +98,14 @@ func (p *Player) Play() {
 			p.Message(server.Awoo, "awooooooooo")
 		case client.SetName:
 			p.SetName(m.PlayerName)
+			p.gameChannel <- &gamechannel.Activity{Type: gamechannel.SetName, From: p.ID, Value: p.Name}
 		case client.SetRoleset:
 			slog.Warn("brb", "roleset", m.Roleset)
+		case client.Quit:
+			slog.Info("player is quitting", "player", p)
+			p.gameChannel <- &gamechannel.Activity{Type: gamechannel.Quit, From: p.ID}
+			p.socket.Close()
+			break
 		default:
 			slog.Warn("unknown message ", "message", m)
 		}
