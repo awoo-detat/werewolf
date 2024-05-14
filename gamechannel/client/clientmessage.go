@@ -8,11 +8,13 @@ import (
 type MessageType string
 
 const (
-	Awoo MessageType = "awoo"
+	Awoo    MessageType = "awoo"
+	SetName MessageType = "setName"
 )
 
 type Message struct {
-	Type MessageType `json:"messageType"`
+	Type       MessageType `json:"messageType"`
+	PlayerName string      `json:"playerName"`
 }
 
 func Decode(raw []byte) *Message {

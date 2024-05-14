@@ -80,6 +80,7 @@ func (p *Player) Play() {
 				break
 			}
 			slog.Error("error reading message", "player", p, "error", err)
+			break
 		}
 
 		m := client.Decode(c)
@@ -87,6 +88,8 @@ func (p *Player) Play() {
 		switch m.Type {
 		case client.Awoo:
 			p.Message(server.Awoo, "awooooooooo")
+		case client.SetName:
+			p.SetName(m.PlayerName)
 		default:
 			slog.Warn("unknown message ", "message", m)
 		}
