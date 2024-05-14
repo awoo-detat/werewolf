@@ -9,6 +9,7 @@ import (
 	"github.com/awoo-detat/werewolf/role"
 
 	"github.com/google/uuid"
+	"github.com/gorilla/websocket"
 )
 
 type Player struct {
@@ -67,6 +68,11 @@ func (p *Player) Play() {
 	for {
 		_, c, err := p.socket.ReadMessage()
 		if err != nil {
+			// TODO!!
+			if websocket.IsCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				slog.Info("closing connection", "player", p)
+				break
+			}
 			slog.Error("error reading message", "player", p, "error", err)
 		}
 
