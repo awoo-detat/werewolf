@@ -63,13 +63,13 @@ func NewGame(p *player.Player) *Game {
 		gameChannel:  make(gamechannel.GameChannel),
 	}
 	g.AddPlayer(p)
-	g.SetLeader(p)
 
 	go g.ListenToGameChannel()
 	return g
 }
 
 func (g *Game) SetLeader(p *player.Player) {
+	slog.Info("setting leader", "player", p)
 	g.Leader = p
 	p.Message(server.RolesetList, roleset.List())
 }
@@ -79,6 +79,9 @@ func (g *Game) State() GameState {
 }
 
 func (g *Game) AddPlayer(p *player.Player) {
+	if len(g.Players) == 0 {
+		g.SetLeader(p)
+	}
 	p.SetGameChannel(g.gameChannel)
 	g.Players[p.ID] = p
 	slog.Info("player added", "player", p)
