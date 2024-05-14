@@ -59,6 +59,7 @@ func (p *Player) Message(t server.MessageType, payload interface{}) error {
 	if err != nil {
 		return err
 	}
+	slog.Info("sending message to player", "message", m, "player", p)
 	return p.socket.WriteMessage(1, m)
 }
 

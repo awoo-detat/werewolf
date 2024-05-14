@@ -64,6 +64,7 @@ func NewGame(p *player.Player) *Game {
 		gameChannel:  make(gamechannel.GameChannel),
 	}
 	g.AddPlayer(p)
+	p.Message(server.RolesetList, roleset.List())
 
 	return g
 }
