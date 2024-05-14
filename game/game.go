@@ -77,7 +77,7 @@ func (g *Game) AddPlayer(p *player.Player) {
 	g.Players[p.ID] = p
 	slog.Info("player added", "player", p)
 	g.Broadcast(server.PlayerJoin, p)
-	g.Broadcast(server.AlivePlayerList, g.playerSlice)
+	g.Broadcast(server.AlivePlayerList, g.Players)
 }
 
 func (g *Game) ChooseRoleset(slug string) error {
