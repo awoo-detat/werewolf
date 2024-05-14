@@ -9,7 +9,7 @@ import (
 )
 
 func TestAttributeView(t *testing.T) {
-	p := NewPlayer()
+	p := NewPlayer(NewMockCommunicator())
 	a := role.MaxEvilAttribute
 	v := NewAttributeView(p, a, true, 0)
 
@@ -17,7 +17,7 @@ func TestAttributeView(t *testing.T) {
 }
 
 func TestRoleView(t *testing.T) {
-	p := NewPlayer()
+	p := NewPlayer(NewMockCommunicator())
 	r := role.Seer()
 	v := NewRoleView(p, r, 0)
 

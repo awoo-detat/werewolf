@@ -10,7 +10,7 @@ import (
 
 func TestInitialization(t *testing.T) {
 	assert := assert.New(t)
-	p := NewPlayer()
+	p := NewPlayer(NewMockCommunicator())
 
 	assert.NotEmpty(p.ID)
 	assert.Empty(p.Name)
@@ -20,7 +20,7 @@ func TestInitialization(t *testing.T) {
 }
 
 func TestSetName(t *testing.T) {
-	p := NewPlayer()
+	p := NewPlayer(NewMockCommunicator())
 	name := "Test Player"
 
 	p.SetName(name)
@@ -30,7 +30,7 @@ func TestSetName(t *testing.T) {
 }
 
 func TestSetRole(t *testing.T) {
-	p := NewPlayer()
+	p := NewPlayer(NewMockCommunicator())
 	r := role.Villager()
 
 	p.SetRole(r)

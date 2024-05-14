@@ -12,7 +12,7 @@ import (
 
 func TestInitialization(t *testing.T) {
 	assert := assert.New(t)
-	l := player.NewPlayer()
+	l := player.NewPlayer(player.NewMockCommunicator())
 
 	g := NewGame(l)
 
@@ -25,9 +25,9 @@ func TestInitialization(t *testing.T) {
 }
 
 func TestAddingPlayers(t *testing.T) {
-	l := player.NewPlayer()
+	l := player.NewPlayer(player.NewMockCommunicator())
 	g := NewGame(l)
-	p := player.NewPlayer()
+	p := player.NewPlayer(player.NewMockCommunicator())
 
 	g.AddPlayer(p)
 
@@ -36,7 +36,7 @@ func TestAddingPlayers(t *testing.T) {
 
 func TestSetRoleset(t *testing.T) {
 	assert := assert.New(t)
-	l := player.NewPlayer()
+	l := player.NewPlayer(player.NewMockCommunicator())
 	g := NewGame(l)
 	rs := roleset.VanillaFiver()
 
@@ -48,7 +48,7 @@ func TestSetRoleset(t *testing.T) {
 
 func TestRolesetMustExist(t *testing.T) {
 	assert := assert.New(t)
-	l := player.NewPlayer()
+	l := player.NewPlayer(player.NewMockCommunicator())
 	g := NewGame(l)
 
 	err := g.ChooseRoleset("dkjjfkfwegfwegy")
@@ -59,7 +59,7 @@ func TestRolesetMustExist(t *testing.T) {
 
 func TestCanChangeRolesetWhenInSetup(t *testing.T) {
 	assert := assert.New(t)
-	l := player.NewPlayer()
+	l := player.NewPlayer(player.NewMockCommunicator())
 	g := NewGame(l)
 	assert.Equal(Setup, g.State())
 	err := g.ChooseRoleset("Vanilla Fiver")
@@ -74,11 +74,11 @@ func TestCanChangeRolesetWhenInSetup(t *testing.T) {
 
 func TestGameCannotHaveStartedWhenChoosingRoleset(t *testing.T) {
 	assert := assert.New(t)
-	p1 := player.NewPlayer()
-	p2 := player.NewPlayer()
-	p3 := player.NewPlayer()
-	p4 := player.NewPlayer()
-	p5 := player.NewPlayer()
+	p1 := player.NewPlayer(player.NewMockCommunicator())
+	p2 := player.NewPlayer(player.NewMockCommunicator())
+	p3 := player.NewPlayer(player.NewMockCommunicator())
+	p4 := player.NewPlayer(player.NewMockCommunicator())
+	p5 := player.NewPlayer(player.NewMockCommunicator())
 	g := NewGame(p1)
 	assert.Equal(Setup, g.State())
 	g.AddPlayer(p2)
@@ -97,11 +97,11 @@ func TestGameCannotHaveStartedWhenChoosingRoleset(t *testing.T) {
 
 func TestCannotStartWhenNotInSetup(t *testing.T) {
 	assert := assert.New(t)
-	p1 := player.NewPlayer()
-	p2 := player.NewPlayer()
-	p3 := player.NewPlayer()
-	p4 := player.NewPlayer()
-	p5 := player.NewPlayer()
+	p1 := player.NewPlayer(player.NewMockCommunicator())
+	p2 := player.NewPlayer(player.NewMockCommunicator())
+	p3 := player.NewPlayer(player.NewMockCommunicator())
+	p4 := player.NewPlayer(player.NewMockCommunicator())
+	p5 := player.NewPlayer(player.NewMockCommunicator())
 	g := NewGame(p1)
 	assert.Equal(Setup, g.State())
 	g.AddPlayer(p2)
@@ -119,7 +119,7 @@ func TestCannotStartWhenNotInSetup(t *testing.T) {
 }
 
 func TestCannotStartGameWithoutRoleset(t *testing.T) {
-	l := player.NewPlayer()
+	l := player.NewPlayer(player.NewMockCommunicator())
 	g := NewGame(l)
 
 	err := g.Start()
@@ -129,7 +129,7 @@ func TestCannotStartGameWithoutRoleset(t *testing.T) {
 
 func TestCannotStartGameWithMismatchedPlayerCountAndRoleset(t *testing.T) {
 	assert := assert.New(t)
-	l := player.NewPlayer()
+	l := player.NewPlayer(player.NewMockCommunicator())
 	g := NewGame(l)
 	err := g.ChooseRoleset("Vanilla Fiver")
 	assert.Nil(err)
@@ -141,11 +141,11 @@ func TestCannotStartGameWithMismatchedPlayerCountAndRoleset(t *testing.T) {
 
 func TestRolesAreAssignedAtGameStart(t *testing.T) {
 	assert := assert.New(t)
-	p1 := player.NewPlayer()
-	p2 := player.NewPlayer()
-	p3 := player.NewPlayer()
-	p4 := player.NewPlayer()
-	p5 := player.NewPlayer()
+	p1 := player.NewPlayer(player.NewMockCommunicator())
+	p2 := player.NewPlayer(player.NewMockCommunicator())
+	p3 := player.NewPlayer(player.NewMockCommunicator())
+	p4 := player.NewPlayer(player.NewMockCommunicator())
+	p5 := player.NewPlayer(player.NewMockCommunicator())
 
 	g := NewGame(p1)
 	assert.Equal(Setup, g.State())
@@ -180,13 +180,13 @@ func TestRolesAreAssignedAtGameStart(t *testing.T) {
 func TestGame(t *testing.T) {
 	assert := assert.New(t)
 
-	g := NewGame(player.NewPlayer())
+	g := NewGame(player.NewPlayer(player.NewMockCommunicator()))
 	assert.Equal(Setup, g.State())
 
 	t.Run("Choose roleset and signup", func(t *testing.T) {
 
 		for i := 0; i < 10; i++ {
-			g.AddPlayer(player.NewPlayer())
+			g.AddPlayer(player.NewPlayer(player.NewMockCommunicator()))
 		}
 
 		err := g.ChooseRoleset("Imperfect Eleven")
