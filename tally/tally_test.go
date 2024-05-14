@@ -11,11 +11,11 @@ import (
 func TestTally(t *testing.T) {
 	assert := assert.New(t)
 
-	dake := player.NewPlayer()
+	dake := player.NewPlayer(player.NewMockCommunicator())
 	dake.SetName("Dake")
-	tommy := player.NewPlayer()
+	tommy := player.NewPlayer(player.NewMockCommunicator())
 	tommy.SetName("Tommy")
-	sigafoos := player.NewPlayer()
+	sigafoos := player.NewPlayer(player.NewMockCommunicator())
 	sigafoos.SetName("Sigafoos")
 	players := []*player.Player{dake, tommy, sigafoos}
 	gt := New(players)
