@@ -7,7 +7,11 @@ import (
 type MessageType string
 
 const (
-	Awoo MessageType = "awoo"
+	Awoo         MessageType = "awoo"
+	IDSet                    = "idSet"
+	PlayerJoin               = "playerJoin"
+	PlayerLeave              = "playerLeave"
+	PlayerRename             = "playerRename"
 )
 
 type Message struct {

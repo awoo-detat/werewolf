@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"slices"
 
+	"github.com/awoo-detat/werewolf/gamechannel"
 	"github.com/awoo-detat/werewolf/player"
 	"github.com/awoo-detat/werewolf/role"
 	"github.com/awoo-detat/werewolf/role/roleset"
@@ -28,6 +29,7 @@ type Game struct {
 	Tally        *tally.Tally
 	nightActions map[*player.Player]*player.FingerPoint
 	Winner       role.PlayerType
+	gameChannel  gamechannel.GameChannel
 }
 
 type GameState int
@@ -58,6 +60,7 @@ func NewGame(p *player.Player) *Game {
 		AlivePlayers: make(map[uuid.UUID]*player.Player),
 		nightActions: make(map[*player.Player]*player.FingerPoint),
 		playerSlice:  []*player.Player{},
+		gameChannel:  make(gamechannel.GameChannel),
 	}
 	g.AddPlayer(p)
 

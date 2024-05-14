@@ -3,6 +3,7 @@ package player
 import (
 	"log/slog"
 
+	"github.com/awoo-detat/werewolf/gamechannel"
 	"github.com/awoo-detat/werewolf/gamechannel/client"
 	"github.com/awoo-detat/werewolf/gamechannel/server"
 	"github.com/awoo-detat/werewolf/role"
@@ -11,11 +12,12 @@ import (
 )
 
 type Player struct {
-	ID     uuid.UUID
-	Name   string
-	Role   *role.Role
-	Views  []*View
-	socket Communicator
+	ID          uuid.UUID
+	Name        string
+	Role        *role.Role
+	Views       []*View
+	socket      Communicator
+	gameChannel gamechannel.GameChannel
 }
 
 func NewPlayer(socket Communicator) *Player {
@@ -24,6 +26,7 @@ func NewPlayer(socket Communicator) *Player {
 		Views:  []*View{},
 		socket: socket,
 	}
+	p.Message(server.IDSet, p.ID)
 	return p
 }
 
