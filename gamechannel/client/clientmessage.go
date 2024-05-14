@@ -23,8 +23,11 @@ func Decode(raw []byte) (*Message, error) {
 	var message Message
 	err := json.Unmarshal(raw, &message)
 	if err != nil {
-		slog.Error("error decoding client message", "error", err, "message", string(raw[:]))
+		slog.Error("error decoding client message", "error", err, "raw", string(raw[:]))
 		return nil, err
+	}
+	if message.Type == "" {
+		slog.Error("message did not decode properly", "message", message, "raw", string(raw[:]))
 	}
 	return &message, nil
 }
