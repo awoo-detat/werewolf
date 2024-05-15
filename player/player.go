@@ -71,6 +71,7 @@ func (p *Player) Reconnect(c Communicator) {
 	slog.Info("player reconnecting", "player", p)
 	p.socket = c
 	go p.Play()
+	p.gameChannel <- &gamechannel.Activity{Type: gamechannel.Reconnect, From: p.ID}
 }
 
 func (p *Player) Play() {

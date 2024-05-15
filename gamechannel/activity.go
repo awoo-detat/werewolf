@@ -9,6 +9,7 @@ type ActivityType int
 const (
 	SetName ActivityType = iota
 	SetRoleset
+	Reconnect
 	Vote
 	Quit
 	ResetGame

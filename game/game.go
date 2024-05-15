@@ -402,12 +402,17 @@ func (g *Game) Broadcast(t server.MessageType, payload interface{}) {
 	}
 }
 
-func (g *Game) BroadcastPlayerList() {
+// probably needs to be better but hackathon
+func (g *Game) alivePlayerList() []*player.Player {
 	var list []*player.Player
 	for _, p := range g.Players {
 		list = append(list, p)
 	}
-	g.Broadcast(server.AlivePlayerList, list)
+	return list
+}
+
+func (g *Game) BroadcastPlayerList() {
+	g.Broadcast(server.AlivePlayerList, g.alivePlayerList())
 }
 
 func (g *Game) ListenToGameChannel() {
@@ -419,6 +424,13 @@ func (g *Game) ListenToGameChannel() {
 		case gamechannel.SetName:
 			g.BroadcastPlayerList()
 		case gamechannel.SetRoleset:
+		case gamechannel.Reconnect:
+			p := g.Players[activity.From]
+			p.Message(server.AlivePlayerList, g.alivePlayerList())
+			if g.Leader == p && g.state == Setup {
+				slog.Info("sending roleset list to leader", "player", p)
+				p.Message(server.RolesetList, roleset.List())
+			}
 		case gamechannel.Vote:
 		case gamechannel.Quit:
 			p := g.Players[activity.From]

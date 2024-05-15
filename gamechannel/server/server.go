@@ -14,6 +14,7 @@ const (
 	AlivePlayerList             = "alivePlayerList"
 	RolesetList                 = "rolesetList"
 	RolesetSelected             = "rolesetSelected"
+	LeaderSet                   = "leaderSet"
 )
 
 type Message struct {
