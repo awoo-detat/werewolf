@@ -8,7 +8,7 @@ type GamePhase string
 
 const (
 	Day   GamePhase = "day"
-	Night           = "Night"
+	Night           = "night"
 )
 
 type Phase struct {
