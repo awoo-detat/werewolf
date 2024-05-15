@@ -430,7 +430,21 @@ func (g *Game) ListenToGameChannel() {
 		case gamechannel.SetName:
 			g.BroadcastPlayerList()
 		case gamechannel.SetRoleset:
-			g.ChooseRoleset(activity.Value.(string))
+			if err := g.ChooseRoleset(activity.Value.(string)); err != nil {
+				if p, ok := g.Players[activity.From]; ok {
+					p.Message(server.Error, err)
+				} else {
+					slog.Error("player not found in map?", "playerId", activity.From)
+				}
+			}
+		case gamechannel.Start:
+			if err := g.Start(); err != nil {
+				if p, ok := g.Players[activity.From]; ok {
+					p.Message(server.Error, err)
+				} else {
+					slog.Error("player not found in map?", "playerId", activity.From)
+				}
+			}
 		case gamechannel.Reconnect:
 			p := g.Players[activity.From]
 			p.Message(server.AlivePlayerList, g.alivePlayerList())

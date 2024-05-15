@@ -10,6 +10,7 @@ const (
 	SetName ActivityType = iota
 	SetRoleset
 	Reconnect
+	Start
 	Vote
 	NightAction
 	Quit

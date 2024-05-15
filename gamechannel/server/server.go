@@ -20,6 +20,7 @@ const (
 	PhaseChanged                = "phaseChanged"
 	View                        = "view"
 	PlayerKilled                = "playerKilled"
+	Error                       = "error"
 )
 
 type Message struct {
