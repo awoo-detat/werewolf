@@ -18,6 +18,14 @@ func init() {
 		"battery",
 		"staple",
 		"village",
+		"good",
+		"evil",
+		"tinker",
+		"tailor",
+		"solder",
+		"spy",
+		"atrocities",
 	})
 	passwordGenerator = spg.NewWLRecipe(3, wordList)
+	passwordGenerator.SeparatorChar = " "
 }

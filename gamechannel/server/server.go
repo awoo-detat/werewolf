@@ -9,6 +9,7 @@ type MessageType string
 const (
 	Awoo            MessageType = "awoo"
 	IDSet                       = "idSet"
+	NameSet                     = "nameSet"
 	PlayerJoin                  = "playerJoin"
 	PlayerLeave                 = "playerLeave"
 	AlivePlayerList             = "alivePlayerList"

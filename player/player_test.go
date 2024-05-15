@@ -13,10 +13,10 @@ func TestInitialization(t *testing.T) {
 	p := NewPlayer(NewMockCommunicator())
 
 	assert.NotEmpty(p.ID)
-	assert.Empty(p.Name)
+	assert.NotEmpty(p.Name)
 	assert.Empty(p.Views)
 	assert.Nil(p.Role)
-	assert.Equal(p.ID.String(), p.String())
+	assert.Equal(p.Name, p.String())
 }
 
 func TestSetName(t *testing.T) {

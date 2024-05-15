@@ -23,12 +23,15 @@ type Player struct {
 }
 
 func NewPlayer(socket Communicator) *Player {
+	name, _ := nameGenerator.Generate()
 	p := &Player{
 		ID:     uuid.New(),
+		Name:   name.String(),
 		Views:  []*View{},
 		socket: socket,
 	}
 	p.Message(server.IDSet, p.ID)
+	p.Message(server.NameSet, p.Name)
 	return p
 }
 
