@@ -451,6 +451,7 @@ func (g *Game) ListenToGameChannel() {
 			}
 		case gamechannel.Start:
 			if err := g.Start(); err != nil {
+				slog.Error("error starting", "error", err)
 				if p, ok := g.Players[activity.From]; ok {
 					p.Message(server.Error, err)
 				} else {
