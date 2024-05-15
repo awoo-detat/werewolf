@@ -1,6 +1,7 @@
 package player
 
 import (
+	"fmt"
 	"log/slog"
 
 	"github.com/awoo-detat/werewolf/gamechannel"
@@ -116,6 +117,7 @@ func (p *Player) Play() {
 			p.socket.Close()
 			break
 		default:
+			p.Message(server.Error, fmt.Sprintf("unknown message %+v", m))
 			slog.Warn("unknown message ", "message", m)
 		}
 	}
