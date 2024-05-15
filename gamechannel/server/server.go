@@ -22,6 +22,7 @@ const (
 	PhaseChanged                = "phaseChanged"
 	View                        = "view"
 	PlayerKilled                = "playerKilled"
+	GameOver                    = "gameOver"
 	Error                       = "error"
 )
 

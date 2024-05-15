@@ -268,6 +268,7 @@ func (g *Game) KillPlayer(p *player.Player) {
 		return
 	}
 	delete(g.AlivePlayers, p.ID)
+	p.Message(server.PlayerKilled, nil)
 	g.RevealPlayer(p)
 
 	maxes, nonmaxes := g.AlivePlayersByType()
@@ -301,6 +302,7 @@ func (g *Game) EndGame(winner role.PlayerType) {
 	slog.Info("game over", "winner", winner)
 	g.state = Finished
 	g.Winner = winner
+	g.Broadcast(server.GameOver, winner)
 }
 
 func (g *Game) AliveMaxEvils() []*player.Player {
@@ -472,12 +474,18 @@ func (g *Game) ListenToGameChannel() {
 				p.Message(server.RolesetSelected, g.Roleset)
 			}
 			if g.state == Running {
+				p.Message(server.RoleAssigned, p.Role)
 				if g.IsDay() {
 					p.Message(server.PhaseChanged, &server.Phase{Phase: server.Day, Count: g.Phase})
 					p.Message(server.TallyChanged, g.Tally)
 				} else {
 					p.Message(server.PhaseChanged, &server.Phase{Phase: server.Night, Count: g.Phase})
 				}
+				if !p.Role.Alive {
+					p.Message(server.PlayerKilled, nil)
+				}
+			} else if g.state == Finished {
+				p.Message(server.GameOver, g.Winner)
 			}
 		case gamechannel.Vote:
 			from := g.Players[activity.From]
