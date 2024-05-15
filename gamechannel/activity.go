@@ -11,6 +11,7 @@ const (
 	SetRoleset
 	Reconnect
 	Vote
+	NightAction
 	Quit
 	ResetGame
 )

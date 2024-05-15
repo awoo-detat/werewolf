@@ -442,6 +442,10 @@ func (g *Game) ListenToGameChannel() {
 			from := g.Players[activity.From]
 			to := g.Players[activity.Value.(uuid.UUID)]
 			g.Vote(&player.FingerPoint{From: from, To: to})
+		case gamechannel.NightAction:
+			from := g.Players[activity.From]
+			to := g.Players[activity.Value.(uuid.UUID)]
+			g.SetNightAction(&player.FingerPoint{From: from, To: to})
 		case gamechannel.Quit:
 			p := g.Players[activity.From]
 			delete(g.Players, activity.From)

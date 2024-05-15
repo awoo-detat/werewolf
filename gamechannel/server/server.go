@@ -19,6 +19,7 @@ const (
 	RoleAssigned                = "roleAssigned"
 	PhaseChanged                = "phaseChanged"
 	View                        = "view"
+	PlayerKilled                = "playerKilled"
 )
 
 type Message struct {

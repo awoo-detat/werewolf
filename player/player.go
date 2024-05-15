@@ -106,6 +106,8 @@ func (p *Player) Play() {
 			p.gameChannel <- &gamechannel.Activity{Type: gamechannel.SetRoleset, Value: m.Roleset}
 		case client.Vote:
 			p.gameChannel <- &gamechannel.Activity{Type: gamechannel.Vote, From: p.ID, Value: m.Target}
+		case client.NightAction:
+			p.gameChannel <- &gamechannel.Activity{Type: gamechannel.NightAction, From: p.ID, Value: m.Target}
 		case client.Quit:
 			slog.Info("player is quitting", "player", p)
 			p.gameChannel <- &gamechannel.Activity{Type: gamechannel.Quit, From: p.ID}
