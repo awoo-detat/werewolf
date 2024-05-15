@@ -93,6 +93,7 @@ func (g *Game) AddPlayer(p *player.Player) {
 	p.SetGameChannel(g.gameChannel)
 	g.Players[p.ID] = p
 	slog.Info("player added", "player", p)
+	p.Message(server.LeaderSet, g.Leader)
 	g.Broadcast(server.PlayerJoin, p)
 	g.BroadcastPlayerList()
 }
@@ -459,6 +460,18 @@ func (g *Game) ListenToGameChannel() {
 			if g.Leader == p && g.state == Setup {
 				slog.Info("sending roleset list to leader", "player", p)
 				g.SendLeaderMessages()
+			}
+			p.Message(server.LeaderSet, g.Leader)
+			if g.Roleset != nil {
+				p.Message(server.RolesetSelected, g.Roleset)
+			}
+			if g.state == Running {
+				if g.IsDay() {
+					p.Message(server.PhaseChanged, &server.Phase{Phase: server.Day, Count: g.Phase})
+					p.Message(server.TallyChanged, g.Tally)
+				} else {
+					p.Message(server.PhaseChanged, &server.Phase{Phase: server.Night, Count: g.Phase})
+				}
 			}
 		case gamechannel.Vote:
 			from := g.Players[activity.From]
