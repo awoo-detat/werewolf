@@ -94,6 +94,7 @@ func (p *Player) Play() {
 
 		m, err := client.Decode(c)
 		if err != nil {
+			p.Message(server.Error, err)
 			continue
 		}
 
