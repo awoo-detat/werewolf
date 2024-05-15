@@ -10,8 +10,8 @@ import (
 // A TallyItem represents a line on a tally: a player and a list
 // of votes.
 type TallyItem struct {
-	Player *player.Player
-	Votes  []*vote.Vote
+	Player *player.Player `json:"player"`
+	Votes  []*vote.Vote   `json:"votes"`
 }
 
 func NewTallyItem(p *player.Player) *TallyItem {

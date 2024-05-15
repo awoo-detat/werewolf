@@ -101,7 +101,9 @@ func (p *Player) Play() {
 			p.SetName(m.PlayerName)
 			p.gameChannel <- &gamechannel.Activity{Type: gamechannel.SetName, From: p.ID, Value: p.Name}
 		case client.SetRoleset:
-			slog.Warn("brb", "roleset", m.Roleset)
+			p.gameChannel <- &gamechannel.Activity{Type: gamechannel.SetRoleset, Value: m.Roleset}
+		case client.Vote:
+			p.gameChannel <- &gamechannel.Activity{Type: gamechannel.Vote, From: p.ID, Value: m.Target}
 		case client.Quit:
 			slog.Info("player is quitting", "player", p)
 			p.gameChannel <- &gamechannel.Activity{Type: gamechannel.Quit, From: p.ID}

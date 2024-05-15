@@ -18,6 +18,5 @@ const (
 type Activity struct {
 	Type  ActivityType
 	From  uuid.UUID
-	To    uuid.UUID
 	Value interface{}
 }

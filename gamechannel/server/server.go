@@ -15,6 +15,7 @@ const (
 	RolesetList                 = "rolesetList"
 	RolesetSelected             = "rolesetSelected"
 	LeaderSet                   = "leaderSet"
+	TallyChanged                = "tallyChanged"
 )
 
 type Message struct {

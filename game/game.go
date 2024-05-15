@@ -214,6 +214,7 @@ func (g *Game) Vote(fp *player.FingerPoint) error {
 	}
 
 	g.Tally.Vote(fp)
+	g.Broadcast(server.TallyChanged, g.Tally)
 
 	switch g.VotingMethod {
 	case InstaKill:
@@ -424,6 +425,7 @@ func (g *Game) ListenToGameChannel() {
 		case gamechannel.SetName:
 			g.BroadcastPlayerList()
 		case gamechannel.SetRoleset:
+			g.ChooseRoleset(activity.Value.(string))
 		case gamechannel.Reconnect:
 			p := g.Players[activity.From]
 			p.Message(server.AlivePlayerList, g.alivePlayerList())
@@ -432,6 +434,9 @@ func (g *Game) ListenToGameChannel() {
 				p.Message(server.RolesetList, roleset.List())
 			}
 		case gamechannel.Vote:
+			from := g.Players[activity.From]
+			to := g.Players[activity.Value.(uuid.UUID)]
+			g.Vote(&player.FingerPoint{From: from, To: to})
 		case gamechannel.Quit:
 			p := g.Players[activity.From]
 			delete(g.Players, activity.From)

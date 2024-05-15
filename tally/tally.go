@@ -13,10 +13,10 @@ import (
 // held last vote (LHLV).
 type Tally struct {
 	// Item is a map of votes ordered by the person being voted for.
-	List []*TallyItem
+	List []*TallyItem `json:"list"`
 	// Inverted is a map ordered by the player doing the voting.
 	voteMap     map[*player.Player]*TallyItem
-	Inverted    map[*player.Player]*vote.Vote
+	Inverted    map[*player.Player]*vote.Vote `json:"inverted"`
 	playerCount int
 }
 

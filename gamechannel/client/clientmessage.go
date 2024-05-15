@@ -3,21 +3,26 @@ package client
 import (
 	"encoding/json"
 	"log/slog"
+
+	"github.com/google/uuid"
 )
 
 type MessageType string
 
 const (
-	Awoo       MessageType = "awoo"
-	SetName    MessageType = "setName"
-	SetRoleset MessageType = "setRoleset"
-	Quit       MessageType = "quit"
+	Awoo        MessageType = "awoo"
+	SetName                 = "setName"
+	SetRoleset              = "setRoleset"
+	Vote                    = "vote"
+	NightAction             = "nightAction"
+	Quit                    = "quit"
 )
 
 type Message struct {
 	Type       MessageType `json:"messageType"`
 	PlayerName string      `json:"playerName"`
 	Roleset    string      `json:"roleset"`
+	Target     uuid.UUID   `json:"target"`
 }
 
 func Decode(raw []byte) (*Message, error) {
