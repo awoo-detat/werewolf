@@ -15,6 +15,7 @@ const (
 	SetRoleset              = "setRoleset"
 	Vote                    = "vote"
 	NightAction             = "nightAction"
+	Start                   = "start"
 	Quit                    = "quit"
 )
 

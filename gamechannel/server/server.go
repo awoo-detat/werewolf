@@ -16,6 +16,9 @@ const (
 	RolesetSelected             = "rolesetSelected"
 	LeaderSet                   = "leaderSet"
 	TallyChanged                = "tallyChanged"
+	RoleAssigned                = "roleAssigned"
+	PhaseChanged                = "phaseChanged"
+	View                        = "view"
 )
 
 type Message struct {

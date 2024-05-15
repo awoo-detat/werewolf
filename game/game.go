@@ -191,10 +191,15 @@ func (g *Game) Start() error {
 func (g *Game) nextPhase() {
 	g.Phase++
 	slog.Info("new phase", "phase", g.Phase)
+
 	// new day new me, reset everything
 	if g.IsDay() {
+		g.Broadcast(server.PhaseChanged, &server.Phase{Phase: server.Day, Count: g.Phase})
 		g.Tally = tally.New(g.playerSlice)
+		g.Broadcast(server.TallyChanged, g.Tally)
 		g.nightActions = make(map[*player.Player]*player.FingerPoint)
+	} else {
+		g.Broadcast(server.PhaseChanged, &server.Phase{Phase: server.Night, Count: g.Phase})
 	}
 }
 

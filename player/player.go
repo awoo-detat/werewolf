@@ -45,6 +45,7 @@ func (p *Player) SetName(name string) {
 
 func (p *Player) SetRole(r *role.Role) {
 	p.Role = r
+	p.Message(server.RoleAssigned, r)
 	slog.Info("setting player role", "player", p, "role", r)
 }
 
@@ -54,6 +55,7 @@ func (p *Player) SetGameChannel(gc gamechannel.GameChannel) {
 
 func (p *Player) AddView(v *View) {
 	p.Views = append(p.Views, v)
+	p.Message(server.View, v)
 	slog.Info("adding view", "view", v, "player", p)
 }
 
