@@ -15,6 +15,7 @@ const (
 	RolesetList                 = "rolesetList"
 	RolesetSelected             = "rolesetSelected"
 	LeaderSet                   = "leaderSet"
+	Password                    = "password"
 	TallyChanged                = "tallyChanged"
 	RoleAssigned                = "roleAssigned"
 	PhaseChanged                = "phaseChanged"

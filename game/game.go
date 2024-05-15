@@ -31,6 +31,7 @@ type Game struct {
 	nightActions map[*player.Player]*player.FingerPoint
 	Winner       role.PlayerType
 	gameChannel  gamechannel.GameChannel
+	Password     string
 }
 
 type GameState int
@@ -53,6 +54,7 @@ const (
 )
 
 func NewGame(p *player.Player) *Game {
+	pw, _ := passwordGenerator.Generate()
 	g := &Game{
 		ID:           uuid.New(),
 		Players:      make(map[uuid.UUID]*player.Player),
@@ -61,6 +63,7 @@ func NewGame(p *player.Player) *Game {
 		nightActions: make(map[*player.Player]*player.FingerPoint),
 		playerSlice:  []*player.Player{},
 		gameChannel:  make(gamechannel.GameChannel),
+		Password:     pw.String(),
 	}
 	g.AddPlayer(p)
 
@@ -72,6 +75,11 @@ func (g *Game) SetLeader(p *player.Player) {
 	slog.Info("setting leader", "player", p)
 	g.Leader = p
 	p.Message(server.RolesetList, roleset.List())
+}
+
+func (g *Game) SendLeaderMessages() {
+	g.Leader.Message(server.RolesetList, roleset.List())
+	g.Leader.Message(server.Password, g.Password)
 }
 
 func (g *Game) State() GameState {
@@ -450,7 +458,7 @@ func (g *Game) ListenToGameChannel() {
 			p.Message(server.AlivePlayerList, g.alivePlayerList())
 			if g.Leader == p && g.state == Setup {
 				slog.Info("sending roleset list to leader", "player", p)
-				p.Message(server.RolesetList, roleset.List())
+				g.SendLeaderMessages()
 			}
 		case gamechannel.Vote:
 			from := g.Players[activity.From]
