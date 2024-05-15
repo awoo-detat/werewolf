@@ -16,7 +16,7 @@ type Tally struct {
 	List []*TallyItem `json:"list"`
 	// Inverted is a map ordered by the player doing the voting.
 	voteMap     map[*player.Player]*TallyItem
-	Inverted    map[*player.Player]*vote.Vote `json:"inverted"`
+	Inverted    map[*player.Player]*vote.Vote `json:"-"`
 	playerCount int
 }
 

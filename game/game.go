@@ -418,7 +418,9 @@ func (g *Game) BroadcastView(v *player.View) {
 
 func (g *Game) Broadcast(t server.MessageType, payload interface{}) {
 	for _, p := range g.Players {
-		p.Message(t, payload)
+		if err := p.Message(t, payload); err != nil {
+			slog.Error("error broadcasting message", "player", p, "error", err)
+		}
 	}
 }
 
