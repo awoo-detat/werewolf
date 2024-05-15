@@ -54,7 +54,10 @@ const (
 )
 
 func NewGame(p *player.Player) *Game {
-	pw, _ := passwordGenerator.Generate()
+	pw, err := passwordGenerator.Generate()
+	if err != nil {
+		slog.Error("error generating password", "error", err)
+	}
 	g := &Game{
 		ID:           uuid.New(),
 		Players:      make(map[uuid.UUID]*player.Player),

@@ -1,13 +1,15 @@
 package game
 
 import (
+	"log/slog"
+
 	"go.1password.io/spg"
 )
 
 var passwordGenerator *spg.WLRecipe
 
 func init() {
-	wordList, _ := spg.NewWordList([]string{
+	wordList, err := spg.NewWordList([]string{
 		"furry",
 		"awoo",
 		"werewolf",
@@ -26,6 +28,11 @@ func init() {
 		"spy",
 		"atrocities",
 	})
+
+	if err != nil {
+		slog.Error("error generating passwords", "error", err)
+		return
+	}
 	passwordGenerator = spg.NewWLRecipe(3, wordList)
 	passwordGenerator.SeparatorChar = " "
 }

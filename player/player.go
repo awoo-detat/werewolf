@@ -23,7 +23,10 @@ type Player struct {
 }
 
 func NewPlayer(socket Communicator) *Player {
-	name, _ := nameGenerator.Generate()
+	name, err := nameGenerator.Generate()
+	if err != nil {
+		slog.Error("error generating name", "error", err)
+	}
 	p := &Player{
 		ID:     uuid.New(),
 		Name:   name.String(),
