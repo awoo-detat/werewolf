@@ -203,6 +203,7 @@ func (g *Game) Start() error {
 func (g *Game) nextPhase() {
 	g.Phase++
 	slog.Info("new phase", "phase", g.Phase)
+	g.Broadcast(server.AlivePlayerList, g.alivePlayerList())
 
 	// new day new me, reset everything
 	if g.IsDay() {
