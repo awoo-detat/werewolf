@@ -81,6 +81,10 @@ func (g *Game) SetLeader(p *player.Player) {
 }
 
 func (g *Game) SendLeaderMessages() {
+	if g.Leader == nil {
+		slog.Error("leader is nil")
+		return
+	}
 	g.Leader.Message(server.RolesetList, roleset.List())
 	g.Leader.Message(server.Password, g.Password)
 }
@@ -184,6 +188,12 @@ func (g *Game) randomClear(p *player.Player, test func(*role.Role) bool) *player
 func (g *Game) Start() error {
 	if g.state > Setup {
 		return &StateError{NeedState: Setup, InState: g.state}
+	}
+	if g.Roleset == nil {
+		return fmt.Errorf("game: cannot start, no roleset selected")
+	}
+	if len(g.Players) != len(g.Roleset.Roles) {
+		return fmt.Errorf("game: cannot start; have %v players, need %v", len(g.Players), len(g.Roleset.Roles))
 	}
 	slog.Info("starting game")
 
@@ -338,6 +348,9 @@ func (g *Game) IsNight() bool {
 }
 
 func (g *Game) SetNightAction(fp *player.FingerPoint) error {
+	if fp == nil || fp.From == nil || fp.To == nil {
+		return fmt.Errorf("error with FingerPoint: %+v", fp)
+	}
 	if !fp.From.Role.Alive {
 		return fmt.Errorf("%s is dead and cannot have a night action", fp.From)
 	}
