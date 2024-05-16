@@ -460,7 +460,7 @@ func (g *Game) Broadcast(t server.MessageType, payload interface{}) {
 // probably needs to be better but hackathon
 func (g *Game) alivePlayerList() []*player.Player {
 	var list []*player.Player
-	for _, p := range g.Players {
+	for _, p := range g.AlivePlayers {
 		list = append(list, p)
 	}
 	return list
