@@ -90,6 +90,9 @@ func (g *Game) State() GameState {
 }
 
 func (g *Game) AddPlayer(p *player.Player) {
+	if g.state != Setup {
+		p.Message(server.Error, "game is in progress")
+	}
 	if len(g.Players) == 0 {
 		g.SetLeader(p)
 	}
@@ -470,7 +473,11 @@ func (g *Game) ListenToGameChannel() {
 				}
 			}
 		case gamechannel.Reconnect:
-			p := g.Players[activity.From]
+			p, ok := g.Players[activity.From]
+			if !ok {
+				slog.Error("unknown player reconnecting", "player", activity.From)
+				continue
+			}
 			p.Message(server.AlivePlayerList, g.alivePlayerList())
 			if g.Leader == p && g.state == Setup {
 				slog.Info("sending roleset list to leader", "player", p)
