@@ -35,6 +35,10 @@ func (a Attribute) String() string {
 	return ""
 }
 
+func (a Attribute) MarshalJSON() ([]byte, error) {
+	return []byte(a.String()), nil
+}
+
 type Action int
 
 const (

@@ -508,6 +508,9 @@ func (g *Game) ListenToGameChannel() {
 				} else {
 					p.Message(server.PhaseChanged, &server.Phase{Phase: server.Night, Count: g.Phase})
 				}
+				for _, v := range p.Views {
+					p.Message(server.View, v)
+				}
 				if !p.Role.Alive {
 					p.Message(server.PlayerKilled, nil)
 				}
