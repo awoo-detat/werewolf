@@ -511,7 +511,7 @@ func (g *Game) ListenToGameChannel() {
 				for _, v := range p.Views {
 					p.Message(server.View, v)
 				}
-				if !p.Role.Alive {
+				if p.Role != nil && !p.Role.Alive {
 					p.Message(server.PlayerKilled, nil)
 				}
 			} else if g.state == Finished {
