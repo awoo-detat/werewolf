@@ -1,6 +1,7 @@
 package role
 
 import (
+	"fmt"
 	"log/slog"
 )
 
@@ -36,7 +37,7 @@ func (a Attribute) String() string {
 }
 
 func (a Attribute) MarshalJSON() ([]byte, error) {
-	return []byte(a.String()), nil
+	return []byte(fmt.Sprintf("\"%s\"", a)), nil
 }
 
 type Action int
