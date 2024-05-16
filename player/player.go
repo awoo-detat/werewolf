@@ -104,6 +104,8 @@ func (p *Player) Play() {
 			continue
 		}
 
+		slog.Info("received message", "player", p, "message", m)
+
 		switch m.Type {
 		case client.Awoo:
 			p.Message(server.Awoo, "awooooooooo")
