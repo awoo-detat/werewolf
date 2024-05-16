@@ -320,7 +320,18 @@ func (g *Game) EndGame(winner role.PlayerType) {
 	slog.Info("game over", "winner", winner)
 	g.state = Finished
 	g.Winner = winner
-	g.Broadcast(server.GameOver, winner)
+	g.Broadcast(server.GameOver, g.ToGameOverMessage())
+}
+
+func (g *Game) ToGameOverMessage() *server.GameOverMessage {
+	players := []*server.RevealedPlayer{}
+	for _, p := range g.Players {
+		players = append(players, p.Reveal())
+	}
+	return &server.GameOverMessage{
+		Winner: g.Winner,
+		Roles:  players,
+	}
 }
 
 func (g *Game) AliveMaxEvils() []*player.Player {
@@ -515,7 +526,7 @@ func (g *Game) ListenToGameChannel() {
 					p.Message(server.PlayerKilled, nil)
 				}
 			} else if g.state == Finished {
-				p.Message(server.GameOver, g.Winner)
+				g.Broadcast(server.GameOver, g.ToGameOverMessage())
 			}
 		case gamechannel.Vote:
 			from := g.Players[activity.From]

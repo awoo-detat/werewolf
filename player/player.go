@@ -68,6 +68,14 @@ func (p *Player) AddView(v *View) {
 	slog.Info("adding view", "view", v, "player", p)
 }
 
+func (p *Player) Reveal() *server.RevealedPlayer {
+	return &server.RevealedPlayer{
+		ID:   p.ID,
+		Name: p.Name,
+		Role: p.Role,
+	}
+}
+
 // Message handles sending a message to the client, wrapping it in error handling
 func (p *Player) Message(t server.MessageType, payload interface{}) error {
 	m, err := server.NewMessage(t, payload)
