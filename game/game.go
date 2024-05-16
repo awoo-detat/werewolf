@@ -224,6 +224,10 @@ func (g *Game) Vote(fp *player.FingerPoint) error {
 		return &PhaseError{GamePhase: g.Phase}
 	}
 
+	if fp == nil || fp.From == nil || fp.To == nil {
+		return fmt.Errorf("error with FingerPoint: %+v", fp)
+	}
+
 	if !fp.From.Role.Alive {
 		return fmt.Errorf("%s is dead and cannot vote", fp.From)
 	}
