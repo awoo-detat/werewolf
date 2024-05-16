@@ -13,6 +13,22 @@ const (
 	Neutral            = iota
 )
 
+func (p PlayerType) String() string {
+	switch p {
+	case Good:
+		return "Good"
+	case Evil:
+		return "Evil"
+	case Neutral:
+		return "Neutral"
+	}
+	return ""
+}
+
+func (p PlayerType) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf("\"%s\"", p)), nil
+}
+
 type Attribute int
 
 const (
