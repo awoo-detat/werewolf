@@ -96,6 +96,7 @@ func (g *Game) State() GameState {
 func (g *Game) AddPlayer(p *player.Player) {
 	if g.state != Setup {
 		p.Message(server.Error, "game is in progress")
+		return
 	}
 	if len(g.Players) == 0 {
 		g.SetLeader(p)
