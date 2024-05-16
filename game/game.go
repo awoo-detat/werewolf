@@ -222,7 +222,7 @@ func (g *Game) nextPhase() {
 	// new day new me, reset everything
 	if g.IsDay() {
 		g.Broadcast(server.PhaseChanged, &server.Phase{Phase: server.Day, Count: g.Phase})
-		g.Tally = tally.New(g.playerSlice)
+		g.Tally = tally.New(g.alivePlayerList())
 		g.Broadcast(server.TallyChanged, g.Tally)
 		g.nightActions = make(map[*player.Player]*player.FingerPoint)
 	} else {
