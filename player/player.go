@@ -62,7 +62,9 @@ func (p *Player) SetGameChannel(gc gamechannel.GameChannel) {
 
 func (p *Player) AddView(v *View) {
 	p.Views = append(p.Views, v)
-	p.Message(server.View, v)
+	if err := p.Message(server.View, v); err != nil {
+		slog.Error("error sending view", "view", v, "error", err)
+	}
 	slog.Info("adding view", "view", v, "player", p)
 }
 
