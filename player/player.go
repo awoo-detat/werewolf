@@ -110,6 +110,7 @@ func (p *Player) Play() {
 
 		m, err := client.Decode(c)
 		if err != nil {
+			slog.Warn("player: error decoding", "error", err)
 			p.Message(server.Error, err)
 			continue
 		}

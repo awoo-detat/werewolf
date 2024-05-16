@@ -486,6 +486,7 @@ func (g *Game) ListenToGameChannel() {
 			if err := g.ChooseRoleset(activity.Value.(string)); err != nil {
 				p, ok := g.Players[activity.From]
 				if ok {
+					slog.Warn("game: error setting roleset", "error", err)
 					p.Message(server.Error, err)
 				} else {
 					slog.Error("player not found in map?", "playerId", activity.From)
