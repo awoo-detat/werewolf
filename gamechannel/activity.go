@@ -15,6 +15,7 @@ const (
 	NightAction
 	Quit
 	ResetGame
+	Awoo
 )
 
 type Activity struct {

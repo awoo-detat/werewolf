@@ -547,6 +547,8 @@ func (g *Game) ListenToGameChannel() {
 			delete(g.Players, activity.From)
 			g.Broadcast(server.PlayerLeave, p)
 			g.BroadcastPlayerList()
+		case gamechannel.Awoo:
+			g.Broadcast(server.Awoo, "awooooooooo")
 		}
 	}
 }

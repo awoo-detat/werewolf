@@ -119,7 +119,7 @@ func (p *Player) Play() {
 
 		switch m.Type {
 		case client.Awoo:
-			p.Message(server.Awoo, "awooooooooo")
+			p.gameChannel <- &gamechannel.Activity{Type: gamechannel.Awoo, From: p.ID}
 		case client.SetName:
 			p.SetName(m.PlayerName)
 			p.gameChannel <- &gamechannel.Activity{Type: gamechannel.SetName, From: p.ID, Value: p.Name}
